@@ -3,406 +3,538 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Tandem Lift Calculator</title>
+    <title>CranePro Web | Advanced Tandem Lift Planner</title>
     <style>
         :root {
-            --bg-main: #121212;
-            --bg-panel: #1e1e1e;
-            --accent: #f39c12;
-            --text-main: #e0e0e0;
-            --text-muted: #888;
-            --safe: #2ecc71;
-            --warning: #f1c40f;
-            --danger: #e74c3c;
-            --border: #333;
+            --bg-base: #0f1115;
+            --bg-panel: #1a1d24;
+            --bg-input: #232730;
+            --accent: #00e5ff;
+            --accent-hover: #00b3cc;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --safe: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
         }
 
+        * { box-sizing: border-box; }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-main);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-base);
             color: var(--text-main);
             margin: 0;
+            padding: 0;
+            font-size: 14px;
+        }
+
+        /* Top Navigation */
+        header {
+            background-color: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-print {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-print:hover { background: var(--accent-hover); }
+
+        /* Main Workspace */
+        .workspace {
+            display: grid;
+            grid-template-columns: 350px 1fr 350px;
+            height: calc(100vh - 60px);
+        }
+
+        .sidebar {
+            background-color: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            border-left: 1px solid var(--border);
+            overflow-y: auto;
             padding: 20px;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .header h1 {
-            color: var(--accent);
-            margin: 0 0 10px 0;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-        }
-
-        .dashboard {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        @media (max-width: 900px) {
-            .dashboard { grid-template-columns: 1fr; }
-        }
-
-        .panel {
-            background-color: var(--bg-panel);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
-        }
-
-        .panel h2 {
-            margin-top: 0;
-            font-size: 1.2rem;
-            color: var(--accent);
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 10px;
-        }
-
-        /* Controls / Inputs */
-        .control-group {
+        .panel-section {
             margin-bottom: 25px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
         }
 
-        .control-header {
+        .panel-section h2 {
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-top: 0;
+            text-transform: uppercase;
+        }
+
+        /* Forms & Inputs */
+        .form-row { margin-bottom: 15px; }
+        
+        label {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
-            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--text-main);
+            font-size: 0.85rem;
         }
 
-        .val-display {
-            color: var(--accent);
-            font-size: 1.1rem;
+        input[type="number"], input[type="text"], select {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 1rem;
         }
 
         input[type="range"] {
             width: 100%;
             accent-color: var(--accent);
-            cursor: pointer;
         }
 
-        select {
-            width: 100%;
-            padding: 12px;
-            background-color: #2a2a2a;
-            color: white;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 1rem;
-            cursor: pointer;
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
         }
 
-        /* Visualization */
-        .viz-container {
-            width: 100%;
-            height: 200px;
-            background-color: #0a0a0a;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            margin-bottom: 20px;
+        /* Center Canvas */
+        .canvas-container {
             position: relative;
-        }
-
-        /* Results & Bars */
-        .result-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .crane-card {
-            background: #2a2a2a;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        .crane-card h3 { margin: 0 0 10px 0; font-size: 1rem; color: var(--text-muted); }
-        .crane-card .load { font-size: 2rem; font-weight: bold; margin: 10px 0; }
-        
-        .progress-bg {
-            background: #111;
-            height: 12px;
-            border-radius: 6px;
+            background: #11141a;
+            background-image: linear-gradient(#1f2229 1px, transparent 1px), linear-gradient(90deg, #1f2229 1px, transparent 1px);
+            background-size: 50px 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             overflow: hidden;
-            margin-top: 10px;
         }
 
-        .progress-fill {
-            height: 100%;
-            width: 0%;
-            transition: all 0.3s ease;
+        canvas {
+            border: 1px solid var(--border);
+            background: rgba(0,0,0,0.3);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
 
-        /* Data Table */
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            font-size: 0.9rem;
+        .canvas-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(26, 29, 36, 0.9);
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
         }
 
-        .data-table th, .data-table td {
-            text-align: left;
-            padding: 8px;
-            border-bottom: 1px solid var(--border);
+        /* Telemetry Cards */
+        .telemetry-card {
+            background: var(--bg-input);
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--safe);
         }
 
-        .data-table th { color: var(--text-muted); }
+        .telemetry-card.warning { border-left-color: var(--warning); }
+        .telemetry-card.danger { border-left-color: var(--danger); }
 
+        .telemetry-title { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; }
+        .telemetry-value { font-size: 1.5rem; font-family: monospace; margin: 5px 0; font-weight: bold; }
+        .telemetry-sub { font-size: 0.8rem; }
+
+        .sign-off-block {
+            display: none;
+            margin-top: 40px;
+            border-top: 2px solid #000;
+            padding-top: 20px;
+        }
+
+        /* Print Media Query */
+        @media print {
+            body { background: white; color: black; }
+            .sidebar { display: none; }
+            .workspace { display: block; height: auto; }
+            .canvas-container { background: white; }
+            canvas { filter: invert(1); border: none; box-shadow: none; }
+            .sign-off-block { display: block; }
+            .telemetry-card { background: none; border: 1px solid #ccc; color: black; break-inside: avoid; }
+            header { border-bottom: 2px solid black; }
+            .btn-print { display: none; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>Demolition Tandem Lift Planner</h1>
-        <p>Interactive Load Share & Utilization Calculator</p>
-    </div>
+    <header>
+        <h1>CranePro Web | 2D Lift Planner</h1>
+        <button class="btn-print" onclick="window.print()">Export Lift Plan (PDF)</button>
+    </header>
 
-    <div class="dashboard">
-        
-        <div class="panel">
-            <h2>1. Lift Parameters</h2>
-            
-            <div class="control-group">
-                <div class="control-header">
-                    <span>Total Member Weight</span>
-                    <span class="val-display" id="valWeight">25.0 t</span>
+    <div class="workspace">
+        <div class="sidebar">
+            <div class="panel-section">
+                <h2>1. Project Details</h2>
+                <div class="form-row">
+                    <label>Project / Site Name</label>
+                    <input type="text" value="Altona Refinery Decommissioning" id="projName">
                 </div>
-                <input type="range" id="sliderWeight" min="1" max="200" step="0.5" value="25">
-            </div>
-
-            <div class="control-group">
-                <div class="control-header">
-                    <span>Center of Gravity (CoG) Position</span>
-                    <span class="val-display" id="valCoG">50%</span>
+                <div class="form-row">
+                    <label>Lift Description</label>
+                    <input type="text" value="Top & Tail Structural Steel Removal" id="liftDesc">
                 </div>
-                <input type="range" id="sliderCoG" min="5" max="95" step="1" value="50">
-                <small style="color: var(--text-muted);">Distance from Main Hook (Left) to Tail Hook (Right)</small>
             </div>
 
-            <div class="control-group">
-                <div class="control-header">
-                    <span>Demolition Dynamic Factor</span>
-                    <span class="val-display" id="valDyn">1.25</span>
+            <div class="panel-section">
+                <h2>2. Load & Rigging Data</h2>
+                <div class="form-row">
+                    <label>Total Member Weight (t) <span id="valWeight">20.0</span></label>
+                    <input type="range" id="slWeight" min="1" max="150" step="0.5" value="20">
                 </div>
-                <input type="range" id="sliderDyn" min="1.0" max="2.0" step="0.05" value="1.25">
+                <div class="form-row">
+                    <label>CoG Position (% from Main) <span id="valCoG">40%</span></label>
+                    <input type="range" id="slCoG" min="10" max="90" step="1" value="40">
+                </div>
+                <div class="form-row checkbox-row">
+                    <input type="checkbox" id="chkSpaceGass" checked>
+                    <label for="chkSpaceGass" style="margin:0;">CoG & Weight verified via Space Gass structural model</label>
+                </div>
+                <div class="form-row" style="margin-top: 15px;">
+                    <label>Demolition Dynamic Factor</label>
+                    <select id="selDyn">
+                        <option value="1.0">1.00 - Standard Lift</option>
+                        <option value="1.1">1.10 - Minor Shock</option>
+                        <option value="1.25" selected>1.25 - Demolition / Cut-away</option>
+                        <option value="1.5">1.50 - Severe Shock Load</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label>Sling Angle to Vertical (Degrees)</label>
+                    <select id="selAngle">
+                        <option value="0">0° (Vertical)</option>
+                        <option value="30" selected>30°</option>
+                        <option value="45">45°</option>
+                        <option value="60">60°</option>
+                    </select>
+                </div>
             </div>
 
-            <h2>2. Crane Selection</h2>
-            <div class="control-group">
-                <label style="display:block; margin-bottom:5px;">Main Crane (Top)</label>
-                <select id="selMainCrane"></select>
+            <div class="panel-section">
+                <h2>3. Main Crane (Top)</h2>
+                <div class="form-row">
+                    <label>Select Crane</label>
+                    <select id="selMainCrane"></select>
+                </div>
+                <div class="form-row">
+                    <label>Outrigger Pad Area (m²)</label>
+                    <input type="number" id="padMain" value="4.0" step="0.5">
+                </div>
             </div>
-            <div class="control-group">
-                <label style="display:block; margin-bottom:5px;">Tail Crane</label>
-                <select id="selTailCrane"></select>
+
+            <div class="panel-section" style="border:none;">
+                <h2>4. Tail Crane</h2>
+                <div class="form-row">
+                    <label>Select Crane</label>
+                    <select id="selTailCrane"></select>
+                </div>
+                <div class="form-row">
+                    <label>Outrigger Pad Area (m²)</label>
+                    <input type="number" id="padTail" value="2.5" step="0.5">
+                </div>
             </div>
         </div>
 
-        <div class="panel">
-            <h2>Live Load Distribution</h2>
+        <div class="canvas-container">
+            <div class="canvas-overlay">
+                <div style="font-weight: bold; color: var(--accent); margin-bottom: 5px;" id="dispProj">Altona Refinery Decommissioning</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted);">Top-Down Lift Simulation</div>
+            </div>
+            <canvas id="liftCanvas" width="800" height="600"></canvas>
             
-            <div class="viz-container">
-                <svg width="100%" height="100%" viewBox="0 0 500 200" preserveAspectRatio="xMidYMid meet" id="liftDiagram">
-                    <line id="lineMain" x1="50" y1="20" x2="50" y2="100" stroke="white" stroke-width="3" stroke-dasharray="5,5"/>
-                    <line id="lineTail" x1="450" y1="20" x2="450" y2="100" stroke="white" stroke-width="3" stroke-dasharray="5,5"/>
-                    
-                    <rect x="40" y="80" width="20" height="20" fill="var(--text-muted)"/>
-                    <rect x="440" y="80" width="20" height="20" fill="var(--text-muted)"/>
-
-                    <rect x="30" y="100" width="440" height="30" fill="#7f8c8d" rx="4"/>
-                    
-                    <polygon id="cogMarker" points="250,130 240,150 260,150" fill="var(--accent)"/>
-                    <text id="cogText" x="250" y="170" fill="var(--accent)" text-anchor="middle" font-weight="bold">CoG</text>
-                    
-                    <text x="50" y="15" fill="white" text-anchor="middle">MAIN</text>
-                    <text x="450" y="15" fill="white" text-anchor="middle">TAIL</text>
-                </svg>
-            </div>
-
-            <div class="result-grid">
-                <div class="crane-card" id="cardMain">
-                    <h3>MAIN CRANE</h3>
-                    <div class="load" id="resLoadMain">0.0 t</div>
-                    <div>Utilisation: <strong id="resUtilMain">0%</strong></div>
-                    <div class="progress-bg">
-                        <div class="progress-fill" id="barMain"></div>
-                    </div>
+            <div class="sign-off-block">
+                <h3>Pre-Lift Engineering Sign-off</h3>
+                <p><strong>Project:</strong> <span id="printProj"></span></p>
+                <p><strong>Lift:</strong> <span id="printLift"></span></p>
+                <div style="display: flex; justify-content: space-between; margin-top: 30px;">
+                    <div style="width: 45%; border-top: 1px solid #000; padding-top: 5px;">Crane Operator Signature / Date</div>
+                    <div style="width: 45%; border-top: 1px solid #000; padding-top: 5px;">Structural Engineer (MIEAust/NER/RPEV) / Date</div>
                 </div>
+            </div>
+        </div>
 
-                <div class="crane-card" id="cardTail">
-                    <h3>TAIL CRANE</h3>
-                    <div class="load" id="resLoadTail">0.0 t</div>
-                    <div>Utilisation: <strong id="resUtilTail">0%</strong></div>
-                    <div class="progress-bg">
-                        <div class="progress-fill" id="barTail"></div>
-                    </div>
+        <div class="sidebar">
+            <div class="panel-section">
+                <h2>Main Crane Telemetry</h2>
+                <div class="telemetry-card" id="cardUtilMain">
+                    <div class="telemetry-title">Capacity Utilization</div>
+                    <div class="telemetry-value" id="resUtilMain">0.0%</div>
+                    <div class="telemetry-sub">Gross Load: <span id="resLoadMain">0</span> t / Cap: <span id="capMainDisp">0</span> t</div>
+                </div>
+                <div class="telemetry-card" id="cardGbpMain">
+                    <div class="telemetry-title">Ground Bearing Pressure</div>
+                    <div class="telemetry-value" id="resGbpMain">0 kPa</div>
+                    <div class="telemetry-sub">Max Outrigger Load: <span id="outLoadMain">0</span> t</div>
+                </div>
+                <div class="telemetry-card">
+                    <div class="telemetry-title">Rigging Tension (Per Leg)</div>
+                    <div class="telemetry-value" id="resRigMain">0.0 t</div>
+                    <div class="telemetry-sub">Based on 2-leg sling configuration</div>
                 </div>
             </div>
 
-            <h2 style="margin-top: 30px;">Accessible Lift Data</h2>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Parameter</th>
-                        <th>Main Crane</th>
-                        <th>Tail Crane</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Capacity at Radius</td>
-                        <td id="tblCapMain">-</td>
-                        <td id="tblCapTail">-</td>
-                    </tr>
-                    <tr>
-                        <td>Hook Block + Rigging</td>
-                        <td id="tblRigMain">-</td>
-                        <td id="tblRigTail">-</td>
-                    </tr>
-                    <tr>
-                        <td>Static Load Share</td>
-                        <td id="tblStatMain">-</td>
-                        <td id="tblStatTail">-</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="panel-section" style="border:none;">
+                <h2>Tail Crane Telemetry</h2>
+                <div class="telemetry-card" id="cardUtilTail">
+                    <div class="telemetry-title">Capacity Utilization</div>
+                    <div class="telemetry-value" id="resUtilTail">0.0%</div>
+                    <div class="telemetry-sub">Gross Load: <span id="resLoadTail">0</span> t / Cap: <span id="capTailDisp">0</span> t</div>
+                </div>
+                <div class="telemetry-card" id="cardGbpTail">
+                    <div class="telemetry-title">Ground Bearing Pressure</div>
+                    <div class="telemetry-value" id="resGbpTail">0 kPa</div>
+                    <div class="telemetry-sub">Max Outrigger Load: <span id="outLoadTail">0</span> t</div>
+                </div>
+                <div class="telemetry-card">
+                    <div class="telemetry-title">Rigging Tension (Per Leg)</div>
+                    <div class="telemetry-value" id="resRigTail">0.0 t</div>
+                    <div class="telemetry-sub">Based on 2-leg sling configuration</div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // Pre-loaded Crane Database (Derived from your typical site fleet)
+        // Crane Database
         const craneDb = {
-            "Tadano GR-800EX (80t RT)": { capacity: 80, blockAndRigging: 3.0 },
-            "SANY SCC 8000A (800t Crawler)": { capacity: 190, blockAndRigging: 12.2 }, // Working radius cap
-            "Liebherr LTM 1250 (250t Mobile)": { capacity: 100, blockAndRigging: 4.5 },
-            "Demag AC-100 (100t Mobile)": { capacity: 45, blockAndRigging: 2.0 },
-            "Franna MAC 25 (25t P&C)": { capacity: 15, blockAndRigging: 0.5 }
+            "Tadano GR-800EX (80t RT)": { cap: 80, mass: 51.4, rig: 3.0, spread: 7.3 },
+            "Grove RT9130E-2 (120t RT)": { cap: 120, mass: 79.0, rig: 4.5, spread: 8.5 },
+            "Demag AC-100 (100t Mobile)": { cap: 100, mass: 60.0, rig: 2.5, spread: 7.2 },
+            "SANY SCC 8000A (190t Crawler)": { cap: 190, mass: 310.0, rig: 11.2, spread: 9.0 }
         };
 
         // DOM Elements
         const DOM = {
-            slWeight: document.getElementById('sliderWeight'),
-            slCoG: document.getElementById('sliderCoG'),
-            slDyn: document.getElementById('sliderDyn'),
+            slWeight: document.getElementById('slWeight'),
+            slCoG: document.getElementById('slCoG'),
             valWeight: document.getElementById('valWeight'),
             valCoG: document.getElementById('valCoG'),
-            valDyn: document.getElementById('valDyn'),
+            selDyn: document.getElementById('selDyn'),
+            selAngle: document.getElementById('selAngle'),
             selMain: document.getElementById('selMainCrane'),
             selTail: document.getElementById('selTailCrane'),
-            cogMarker: document.getElementById('cogMarker'),
-            cogText: document.getElementById('cogText'),
-            resLoadMain: document.getElementById('resLoadMain'),
-            resLoadTail: document.getElementById('resLoadTail'),
-            resUtilMain: document.getElementById('resUtilMain'),
-            resUtilTail: document.getElementById('resUtilTail'),
-            barMain: document.getElementById('barMain'),
-            barTail: document.getElementById('barTail')
+            padMain: document.getElementById('padMain'),
+            padTail: document.getElementById('padTail'),
+            projName: document.getElementById('projName'),
+            liftDesc: document.getElementById('liftDesc'),
+            dispProj: document.getElementById('dispProj'),
+            printProj: document.getElementById('printProj'),
+            printLift: document.getElementById('printLift'),
+            canvas: document.getElementById('liftCanvas'),
+            ctx: document.getElementById('liftCanvas').getContext('2d')
         };
 
-        // Initialize Dropdowns
-        function initDropdowns() {
+        // Initialize App
+        function init() {
             Object.keys(craneDb).forEach(crane => {
                 DOM.selMain.add(new Option(crane, crane));
                 DOM.selTail.add(new Option(crane, crane));
             });
-            // Set defaults
-            DOM.selMain.selectedIndex = 1; // SANY
+            DOM.selMain.selectedIndex = 1; // Grove
             DOM.selTail.selectedIndex = 0; // Tadano
+
+            // Event Listeners
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(input => input.addEventListener('input', updateCalc));
+            
+            updateCalc();
         }
 
-        // Core Calculation Engine
-        function updateLift() {
-            // Read Inputs
+        // Core Engineering Logic
+        function updateCalc() {
+            // Read inputs
             const W = parseFloat(DOM.slWeight.value);
-            const cogPercent = parseFloat(DOM.slCoG.value);
-            const dyn = parseFloat(DOM.slDyn.value);
+            const cogPct = parseFloat(DOM.slCoG.value) / 100;
+            const dyn = parseFloat(DOM.selDyn.value);
+            const angleDeg = parseFloat(DOM.selAngle.value);
+            const angleRad = angleDeg * (Math.PI / 180);
             
             const mainCrane = craneDb[DOM.selMain.value];
             const tailCrane = craneDb[DOM.selTail.value];
+            const padAreaMain = parseFloat(DOM.padMain.value) || 1;
+            const padAreaTail = parseFloat(DOM.padTail.value) || 1;
 
-            // Update Input Displays
-            DOM.valWeight.innerText = W.toFixed(1) + ' t';
-            DOM.valCoG.innerText = cogPercent + '%';
-            DOM.valDyn.innerText = dyn.toFixed(2);
+            // Sync Text
+            DOM.valWeight.innerText = W.toFixed(1);
+            DOM.valCoG.innerText = (cogPct * 100).toFixed(0) + '%';
+            DOM.dispProj.innerText = DOM.projName.value;
+            DOM.printProj.innerText = DOM.projName.value;
+            DOM.printLift.innerText = DOM.liftDesc.value;
 
-            // Calculate Static Load Share (Equilibrium)
-            // If CoG is 20% from main, Tail takes 20%, Main takes 80%
-            const shareTail = cogPercent / 100;
-            const shareMain = 1 - shareTail;
+            // Load Sharing
+            const staticTail = W * cogPct; // If CoG is 40% from main, tail takes 40%
+            const staticMain = W * (1 - cogPct);
 
-            const staticMain = W * shareMain;
-            const staticTail = W * shareTail;
+            const factMain = (staticMain + mainCrane.rig) * dyn;
+            const factTail = (staticTail + tailCrane.rig) * dyn;
 
-            // Calculate Factored Gross Load ( (Static + Rigging) * Dynamic Factor )
-            const factMain = (staticMain + mainCrane.blockAndRigging) * dyn;
-            const factTail = (staticTail + tailCrane.blockAndRigging) * dyn;
+            const utilMain = (factMain / mainCrane.cap) * 100;
+            const utilTail = (factTail / tailCrane.cap) * 100;
 
-            // Calculate Utilizations
-            const utilMain = (factMain / mainCrane.capacity) * 100;
-            const utilTail = (factTail / tailCrane.capacity) * 100;
+            // Rigging Tension (Factored load divided by 2 legs, divided by cos of angle to vertical)
+            // Note: Industry standard angle is often measured from vertical. Tension = Load / (N * cos(a))
+            const tensionMain = (factMain / 2) / Math.cos(angleRad);
+            const tensionTail = (factTail / 2) / Math.cos(angleRad);
 
-            // Update UI Graphics (SVG)
-            // SVG range is X: 50 (Main) to 450 (Tail). Total distance = 400.
-            const svgX = 50 + (400 * shareTail); 
-            DOM.cogMarker.setAttribute('points', `${svgX},130 ${svgX-10},150 ${svgX+10},150`);
-            DOM.cogText.setAttribute('x', svgX);
-
-            // Update Result Cards
-            DOM.resLoadMain.innerText = factMain.toFixed(1) + ' t';
-            DOM.resLoadTail.innerText = factTail.toFixed(1) + ' t';
-
-            updateBar(DOM.barMain, DOM.resUtilMain, utilMain);
-            updateBar(DOM.barTail, DOM.resUtilTail, utilTail);
-
-            // Update Data Table
-            document.getElementById('tblCapMain').innerText = mainCrane.capacity.toFixed(1) + ' t';
-            document.getElementById('tblCapTail').innerText = tailCrane.capacity.toFixed(1) + ' t';
+            // Ground Bearing Pressure (Max Outrigger Load Formula: 0.65 * (Crane Mass + Load))
+            const outLoadMain = 0.65 * (mainCrane.mass + factMain);
+            const outLoadTail = 0.65 * (tailCrane.mass + factTail);
             
-            document.getElementById('tblRigMain').innerText = mainCrane.blockAndRigging.toFixed(1) + ' t';
-            document.getElementById('tblRigTail').innerText = tailCrane.blockAndRigging.toFixed(1) + ' t';
+            const gbpMain = (outLoadMain * 9.81) / padAreaMain; // Convert to kN, divide by m2 = kPa
+            const gbpTail = (outLoadTail * 9.81) / padAreaTail;
+
+            // Update DOM
+            updateCard('cardUtilMain', 'resUtilMain', utilMain, '%');
+            updateCard('cardUtilTail', 'resUtilTail', utilTail, '%');
             
-            document.getElementById('tblStatMain').innerText = staticMain.toFixed(1) + ' t';
-            document.getElementById('tblStatTail').innerText = staticTail.toFixed(1) + ' t';
+            document.getElementById('resLoadMain').innerText = factMain.toFixed(1);
+            document.getElementById('capMainDisp').innerText = mainCrane.cap;
+            document.getElementById('resLoadTail').innerText = factTail.toFixed(1);
+            document.getElementById('capTailDisp').innerText = tailCrane.cap;
+
+            updateCard('cardGbpMain', 'resGbpMain', gbpMain, ' kPa', 300, 150); // Warning thresholds
+            updateCard('cardGbpTail', 'resGbpTail', gbpTail, ' kPa', 300, 150);
+            
+            document.getElementById('outLoadMain').innerText = outLoadMain.toFixed(1);
+            document.getElementById('outLoadTail').innerText = outLoadTail.toFixed(1);
+
+            document.getElementById('resRigMain').innerText = tensionMain.toFixed(1) + ' t';
+            document.getElementById('resRigTail').innerText = tensionTail.toFixed(1) + ' t';
+
+            drawCanvas(cogPct, mainCrane.spread, tailCrane.spread);
         }
 
-        // Bar coloring logic
-        function updateBar(barElement, textElement, utilVal) {
-            const displayVal = Math.min(utilVal, 999); // Cap display number
-            const widthVal = Math.min(Math.max(utilVal, 0), 100);
+        function updateCard(cardId, textId, value, unit, dangerThreshold = 90, warningThreshold = 75) {
+            const card = document.getElementById(cardId);
+            document.getElementById(textId).innerText = value.toFixed(1) + unit;
             
-            textElement.innerText = displayVal.toFixed(1) + '%';
-            barElement.style.width = widthVal + '%';
-
-            if (utilVal >= 90) {
-                barElement.style.backgroundColor = 'var(--danger)';
-                textElement.style.color = 'var(--danger)';
-            } else if (utilVal >= 75) {
-                barElement.style.backgroundColor = 'var(--warning)';
-                textElement.style.color = 'var(--warning)';
-            } else {
-                barElement.style.backgroundColor = 'var(--safe)';
-                textElement.style.color = 'var(--safe)';
-            }
+            card.className = 'telemetry-card';
+            if (value >= dangerThreshold) card.classList.add('danger');
+            else if (value >= warningThreshold) card.classList.add('warning');
         }
 
-        // Event Listeners
-        [DOM.slWeight, DOM.slCoG, DOM.slDyn, DOM.selMain, DOM.selTail].forEach(el => {
-            el.addEventListener('input', updateLift);
-        });
+        // Top-Down Canvas Renderer
+        function drawCanvas(cogPct, spreadMain, spreadTail) {
+            const ctx = DOM.ctx;
+            const w = DOM.canvas.width;
+            const h = DOM.canvas.height;
+            
+            ctx.clearRect(0, 0, w, h);
+            
+            // Scaling coordinates
+            const loadY = h / 2;
+            const loadWidth = 400;
+            const startX = (w - loadWidth) / 2;
+            
+            // Draw Main Crane (Left)
+            const mainX = startX;
+            const mainY = loadY - 120;
+            drawCraneFootprint(ctx, mainX, mainY, spreadMain, '#00e5ff', 'MAIN CRANE');
+            drawBoom(ctx, mainX, mainY, startX, loadY);
 
-        // Init
-        initDropdowns();
-        updateLift();
+            // Draw Tail Crane (Right)
+            const tailX = startX + loadWidth;
+            const tailY = loadY + 120;
+            drawCraneFootprint(ctx, tailX, tailY, spreadTail, '#f59e0b', 'TAIL CRANE');
+            drawBoom(ctx, tailX, tailY, tailX, loadY);
 
+            // Draw Steel Member (Load)
+            ctx.fillStyle = '#64748b';
+            ctx.fillRect(startX, loadY - 10, loadWidth, 20);
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(startX, loadY - 10, loadWidth, 20);
+
+            // Draw CoG
+            const cogX = startX + (loadWidth * cogPct);
+            ctx.beginPath();
+            ctx.arc(cogX, loadY, 15, 0, 2 * Math.PI);
+            ctx.fillStyle = '#ef4444';
+            ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('CoG', cogX, loadY - 25);
+        }
+
+        function drawCraneFootprint(ctx, x, y, spread, color, label) {
+            const scale = 5; // Pixels per meter
+            const sPix = spread * scale;
+            
+            // Draw outrigger box
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.strokeRect(x - sPix/2, y - sPix/2, sPix, sPix);
+            ctx.setLineDash([]);
+            
+            // Draw Pads
+            const pSize = 10;
+            ctx.fillStyle = color;
+            ctx.fillRect(x - sPix/2 - pSize/2, y - sPix/2 - pSize/2, pSize, pSize);
+            ctx.fillRect(x + sPix/2 - pSize/2, y - sPix/2 - pSize/2, pSize, pSize);
+            ctx.fillRect(x - sPix/2 - pSize/2, y + sPix/2 - pSize/2, pSize, pSize);
+            ctx.fillRect(x + sPix/2 - pSize/2, y + sPix/2 - pSize/2, pSize, pSize);
+
+            // Draw Crane Body
+            ctx.fillStyle = '#334155';
+            ctx.fillRect(x - 15, y - 25, 30, 50);
+
+            ctx.fillStyle = color;
+            ctx.font = 'bold 12px sans-serif';
+            ctx.fillText(label, x, y - sPix/2 - 15);
+        }
+
+        function drawBoom(ctx, startX, startY, hookX, hookY) {
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(hookX, hookY);
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            // Draw Hook Block
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(hookX, hookY, 6, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+
+        window.onload = init;
     </script>
 </body>
 </html>
