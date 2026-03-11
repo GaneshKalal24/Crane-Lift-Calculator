@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Tandem Lift Calculator</title>
+    <style>
+        :root {
+            --bg-main: #121212;
+            --bg-panel: #1e1e1e;
+            --accent: #f39c12;
+            --text-main: #e0e0e0;
+            --text-muted: #888;
+            --safe: #2ecc71;
+            --warning: #f1c40f;
+            --danger: #e74c3c;
+            --border: #333;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: var(--accent);
+            margin: 0 0 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard { grid-template-columns: 1fr; }
+        }
+
+        .panel {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+        }
+
+        .panel h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: var(--accent);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        /* Controls / Inputs */
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .val-display {
+            color: var(--accent);
+            font-size: 1.1rem;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            background-color: #2a2a2a;
+            color: white;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        /* Visualization */
+        .viz-container {
+            width: 100%;
+            height: 200px;
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        /* Results & Bars */
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .crane-card {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .crane-card h3 { margin: 0 0 10px 0; font-size: 1rem; color: var(--text-muted); }
+        .crane-card .load { font-size: 2rem; font-weight: bold; margin: 10px 0; }
+        
+        .progress-bg {
+            background: #111;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            transition: all 0.3s ease;
+        }
+
+        /* Data Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+
+        .data-table th, .data-table td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table th { color: var(--text-muted); }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Demolition Tandem Lift Planner</h1>
+        <p>Interactive Load Share & Utilization Calculator</p>
+    </div>
+
+    <div class="dashboard">
+        
+        <div class="panel">
+            <h2>1. Lift Parameters</h2>
+            
+            <div class="control-group">
+                <div class="control-header">
+                    <span>Total Member Weight</span>
+                    <span class="val-display" id="valWeight">25.0 t</span>
+                </div>
+                <input type="range" id="sliderWeight" min="1" max="200" step="0.5" value="25">
+            </div>
+
+            <div class="control-group">
+                <div class="control-header">
+                    <span>Center of Gravity (CoG) Position</span>
+                    <span class="val-display" id="valCoG">50%</span>
+                </div>
+                <input type="range" id="sliderCoG" min="5" max="95" step="1" value="50">
+                <small style="color: var(--text-muted);">Distance from Main Hook (Left) to Tail Hook (Right)</small>
+            </div>
+
+            <div class="control-group">
+                <div class="control-header">
+                    <span>Demolition Dynamic Factor</span>
+                    <span class="val-display" id="valDyn">1.25</span>
+                </div>
+                <input type="range" id="sliderDyn" min="1.0" max="2.0" step="0.05" value="1.25">
+            </div>
+
+            <h2>2. Crane Selection</h2>
+            <div class="control-group">
+                <label style="display:block; margin-bottom:5px;">Main Crane (Top)</label>
+                <select id="selMainCrane"></select>
+            </div>
+            <div class="control-group">
+                <label style="display:block; margin-bottom:5px;">Tail Crane</label>
+                <select id="selTailCrane"></select>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Live Load Distribution</h2>
+            
+            <div class="viz-container">
+                <svg width="100%" height="100%" viewBox="0 0 500 200" preserveAspectRatio="xMidYMid meet" id="liftDiagram">
+                    <line id="lineMain" x1="50" y1="20" x2="50" y2="100" stroke="white" stroke-width="3" stroke-dasharray="5,5"/>
+                    <line id="lineTail" x1="450" y1="20" x2="450" y2="100" stroke="white" stroke-width="3" stroke-dasharray="5,5"/>
+                    
+                    <rect x="40" y="80" width="20" height="20" fill="var(--text-muted)"/>
+                    <rect x="440" y="80" width="20" height="20" fill="var(--text-muted)"/>
+
+                    <rect x="30" y="100" width="440" height="30" fill="#7f8c8d" rx="4"/>
+                    
+                    <polygon id="cogMarker" points="250,130 240,150 260,150" fill="var(--accent)"/>
+                    <text id="cogText" x="250" y="170" fill="var(--accent)" text-anchor="middle" font-weight="bold">CoG</text>
+                    
+                    <text x="50" y="15" fill="white" text-anchor="middle">MAIN</text>
+                    <text x="450" y="15" fill="white" text-anchor="middle">TAIL</text>
+                </svg>
+            </div>
+
+            <div class="result-grid">
+                <div class="crane-card" id="cardMain">
+                    <h3>MAIN CRANE</h3>
+                    <div class="load" id="resLoadMain">0.0 t</div>
+                    <div>Utilisation: <strong id="resUtilMain">0%</strong></div>
+                    <div class="progress-bg">
+                        <div class="progress-fill" id="barMain"></div>
+                    </div>
+                </div>
+
+                <div class="crane-card" id="cardTail">
+                    <h3>TAIL CRANE</h3>
+                    <div class="load" id="resLoadTail">0.0 t</div>
+                    <div>Utilisation: <strong id="resUtilTail">0%</strong></div>
+                    <div class="progress-bg">
+                        <div class="progress-fill" id="barTail"></div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 style="margin-top: 30px;">Accessible Lift Data</h2>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Main Crane</th>
+                        <th>Tail Crane</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Capacity at Radius</td>
+                        <td id="tblCapMain">-</td>
+                        <td id="tblCapTail">-</td>
+                    </tr>
+                    <tr>
+                        <td>Hook Block + Rigging</td>
+                        <td id="tblRigMain">-</td>
+                        <td id="tblRigTail">-</td>
+                    </tr>
+                    <tr>
+                        <td>Static Load Share</td>
+                        <td id="tblStatMain">-</td>
+                        <td id="tblStatTail">-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Pre-loaded Crane Database (Derived from your typical site fleet)
+        const craneDb = {
+            "Tadano GR-800EX (80t RT)": { capacity: 80, blockAndRigging: 3.0 },
+            "SANY SCC 8000A (800t Crawler)": { capacity: 190, blockAndRigging: 12.2 }, // Working radius cap
+            "Liebherr LTM 1250 (250t Mobile)": { capacity: 100, blockAndRigging: 4.5 },
+            "Demag AC-100 (100t Mobile)": { capacity: 45, blockAndRigging: 2.0 },
+            "Franna MAC 25 (25t P&C)": { capacity: 15, blockAndRigging: 0.5 }
+        };
+
+        // DOM Elements
+        const DOM = {
+            slWeight: document.getElementById('sliderWeight'),
+            slCoG: document.getElementById('sliderCoG'),
+            slDyn: document.getElementById('sliderDyn'),
+            valWeight: document.getElementById('valWeight'),
+            valCoG: document.getElementById('valCoG'),
+            valDyn: document.getElementById('valDyn'),
+            selMain: document.getElementById('selMainCrane'),
+            selTail: document.getElementById('selTailCrane'),
+            cogMarker: document.getElementById('cogMarker'),
+            cogText: document.getElementById('cogText'),
+            resLoadMain: document.getElementById('resLoadMain'),
+            resLoadTail: document.getElementById('resLoadTail'),
+            resUtilMain: document.getElementById('resUtilMain'),
+            resUtilTail: document.getElementById('resUtilTail'),
+            barMain: document.getElementById('barMain'),
+            barTail: document.getElementById('barTail')
+        };
+
+        // Initialize Dropdowns
+        function initDropdowns() {
+            Object.keys(craneDb).forEach(crane => {
+                DOM.selMain.add(new Option(crane, crane));
+                DOM.selTail.add(new Option(crane, crane));
+            });
+            // Set defaults
+            DOM.selMain.selectedIndex = 1; // SANY
+            DOM.selTail.selectedIndex = 0; // Tadano
+        }
+
+        // Core Calculation Engine
+        function updateLift() {
+            // Read Inputs
+            const W = parseFloat(DOM.slWeight.value);
+            const cogPercent = parseFloat(DOM.slCoG.value);
+            const dyn = parseFloat(DOM.slDyn.value);
+            
+            const mainCrane = craneDb[DOM.selMain.value];
+            const tailCrane = craneDb[DOM.selTail.value];
+
+            // Update Input Displays
+            DOM.valWeight.innerText = W.toFixed(1) + ' t';
+            DOM.valCoG.innerText = cogPercent + '%';
+            DOM.valDyn.innerText = dyn.toFixed(2);
+
+            // Calculate Static Load Share (Equilibrium)
+            // If CoG is 20% from main, Tail takes 20%, Main takes 80%
+            const shareTail = cogPercent / 100;
+            const shareMain = 1 - shareTail;
+
+            const staticMain = W * shareMain;
+            const staticTail = W * shareTail;
+
+            // Calculate Factored Gross Load ( (Static + Rigging) * Dynamic Factor )
+            const factMain = (staticMain + mainCrane.blockAndRigging) * dyn;
+            const factTail = (staticTail + tailCrane.blockAndRigging) * dyn;
+
+            // Calculate Utilizations
+            const utilMain = (factMain / mainCrane.capacity) * 100;
+            const utilTail = (factTail / tailCrane.capacity) * 100;
+
+            // Update UI Graphics (SVG)
+            // SVG range is X: 50 (Main) to 450 (Tail). Total distance = 400.
+            const svgX = 50 + (400 * shareTail); 
+            DOM.cogMarker.setAttribute('points', `${svgX},130 ${svgX-10},150 ${svgX+10},150`);
+            DOM.cogText.setAttribute('x', svgX);
+
+            // Update Result Cards
+            DOM.resLoadMain.innerText = factMain.toFixed(1) + ' t';
+            DOM.resLoadTail.innerText = factTail.toFixed(1) + ' t';
+
+            updateBar(DOM.barMain, DOM.resUtilMain, utilMain);
+            updateBar(DOM.barTail, DOM.resUtilTail, utilTail);
+
+            // Update Data Table
+            document.getElementById('tblCapMain').innerText = mainCrane.capacity.toFixed(1) + ' t';
+            document.getElementById('tblCapTail').innerText = tailCrane.capacity.toFixed(1) + ' t';
+            
+            document.getElementById('tblRigMain').innerText = mainCrane.blockAndRigging.toFixed(1) + ' t';
+            document.getElementById('tblRigTail').innerText = tailCrane.blockAndRigging.toFixed(1) + ' t';
+            
+            document.getElementById('tblStatMain').innerText = staticMain.toFixed(1) + ' t';
+            document.getElementById('tblStatTail').innerText = staticTail.toFixed(1) + ' t';
+        }
+
+        // Bar coloring logic
+        function updateBar(barElement, textElement, utilVal) {
+            const displayVal = Math.min(utilVal, 999); // Cap display number
+            const widthVal = Math.min(Math.max(utilVal, 0), 100);
+            
+            textElement.innerText = displayVal.toFixed(1) + '%';
+            barElement.style.width = widthVal + '%';
+
+            if (utilVal >= 90) {
+                barElement.style.backgroundColor = 'var(--danger)';
+                textElement.style.color = 'var(--danger)';
+            } else if (utilVal >= 75) {
+                barElement.style.backgroundColor = 'var(--warning)';
+                textElement.style.color = 'var(--warning)';
+            } else {
+                barElement.style.backgroundColor = 'var(--safe)';
+                textElement.style.color = 'var(--safe)';
+            }
+        }
+
+        // Event Listeners
+        [DOM.slWeight, DOM.slCoG, DOM.slDyn, DOM.selMain, DOM.selTail].forEach(el => {
+            el.addEventListener('input', updateLift);
+        });
+
+        // Init
+        initDropdowns();
+        updateLift();
+
+    </script>
+</body>
+</html>
