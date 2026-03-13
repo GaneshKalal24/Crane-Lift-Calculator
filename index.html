@@ -3,586 +3,1936 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CranePro v5 | In-Air Structural Lay-Down</title>
+<title>CranePro v5 | Top & Tail Lay-Down Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-/* ═══════════════════════════════════════════
-   THEME & HIGH-VISIBILITY TYPOGRAPHY
-═══════════════════════════════════════════ */
-:root {
-  --acc: #f97316;
-  --sky: #38bdf8;
-  --ok: #22c55e;
-  --warn: #eab308;
-  --danger: #ef4444;
-  --bg0: #0a0f18;
-  --bg1: #111827;
-  --bg2: #1e293b;
-  --card: #0f172a;
-  --b1: #334155;
-  --b2: #475569;
-  --tx: #f8fafc;
-  --txhi: #ffffff;
-  --mu: #94a3b8;
-  --ibg: #020617;
-  --tr: all 0.2s ease;
+:root{
+  --acc:#f97316;--sky:#38bdf8;--ok:#22c55e;--warn:#eab308;--danger:#ef4444;
+  --tr:all .2s ease;--rad:5px;
 }
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-/* ENLARGED BASE FONT FOR MAXIMUM READABILITY */
-html { font-size: 16px; } 
-body { 
-    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif; 
-    background: var(--bg0); 
-    color: var(--tx); 
-    min-height: 100vh; 
-    overflow-x: hidden; 
+[data-theme=dark]{
+  --bg0:#020a14;--bg1:#060f1c;--bg2:#0a1628;
+  --card:#0e1e30;--b1:#162844;--b2:#1e3655;
+  --tx:#c8ddf0;--txhi:#e8f4ff;--mu:#4a6a88;--mu2:#3a5268;
+  --sh:0 8px 40px rgba(0,0,0,.8);--ibg:#061020;
 }
-
-/* ── TOPBAR ── */
-#top { background: var(--bg1); border-bottom: 2px solid var(--b1); padding: 0 20px; height: 60px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-.logo { font-size: 1.4rem; font-weight: 900; color: var(--acc); text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; }
-.prow { display: flex; gap: 10px; align-items: center; }
-.pf { background: transparent; border: none; border-bottom: 2px solid var(--b1); color: var(--txhi); font-size: 1.1rem; font-weight: bold; padding: 4px 8px; outline: none; }
-.pf:focus { border-color: var(--acc); }
-.btn { padding: 8px 16px; font-size: 1rem; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; transition: var(--tr); }
-.btn-primary { background: var(--acc); color: #000; }
-.btn-primary:hover { background: #fb923c; }
-
-/* ── LAYOUT ── */
-#app { display: grid; grid-template-columns: 350px 1fr 380px; height: calc(100vh - 60px); }
-.pan { overflow-y: auto; padding: 15px; background: var(--bg1); }
-.pan::-webkit-scrollbar { width: 6px; }
-.pan::-webkit-scrollbar-thumb { background: var(--b2); border-radius: 3px; }
-#ctr { background: var(--bg0); border-left: 2px solid var(--b1); border-right: 2px solid var(--b1); display: flex; flex-direction: column; }
-
-/* ── UI CARDS & INPUTS ── */
-.sh { font-size: 1.1rem; font-weight: 900; color: var(--mu); text-transform: uppercase; padding-bottom: 5px; border-bottom: 2px solid var(--b1); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; letter-spacing: 1px; }
-.sh .d { width: 8px; height: 8px; border-radius: 50%; background: var(--acc); }
-.sh .d.b { background: var(--sky); }
-
-.ic { background: var(--card); border: 1px solid var(--b1); border-radius: 6px; padding: 15px; margin-bottom: 15px; }
-.row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.row:last-child { margin-bottom: 0; }
-
-.lb { font-size: 1rem; font-weight: 600; color: var(--tx); line-height: 1.3; }
-.lb small { display: block; font-size: 0.8rem; font-weight: 400; color: var(--mu); margin-top: 2px; }
-
-input[type=number], select { 
-    background: var(--ibg); border: 2px solid var(--b1); color: var(--txhi); 
-    font-size: 1.2rem; font-weight: bold; padding: 6px 10px; border-radius: 4px; 
-    width: 90px; text-align: right; outline: none; 
+[data-theme=light]{
+  --bg0:#dfe8f4;--bg1:#e8f0fa;--bg2:#f2f6fd;
+  --card:#ffffff;--b1:#c4d4e8;--b2:#a8c0d8;
+  --tx:#2a3c52;--txhi:#101e2e;--mu:#6080a0;--mu2:#8aaac0;
+  --sh:0 4px 24px rgba(0,0,0,.1);--ibg:#f8fbff;
 }
-input[type=number]:focus, select:focus { border-color: var(--acc); }
-select { width: 160px; text-align: left; }
-.un { font-size: 1rem; font-weight: bold; color: var(--mu); margin-left: 5px; }
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px}
+body{font-family:'Inter',sans-serif;background:var(--bg0);color:var(--tx);height:100vh;overflow:hidden;transition:background .3s,color .3s}
 
-/* ── PHASE STEPPER ── */
-#stepper { background: var(--card); border-bottom: 2px solid var(--b1); padding: 15px 20px; }
-.psrow { display: flex; justify-content: space-between; }
-.psi { flex: 1; text-align: center; cursor: pointer; opacity: 0.5; transition: var(--tr); border-bottom: 4px solid transparent; padding-bottom: 10px; }
-.psi.active { opacity: 1; border-bottom-color: var(--acc); }
-.psi.done { opacity: 0.8; border-bottom-color: var(--ok); }
-.pscirc { font-size: 1.2rem; font-weight: 900; color: var(--txhi); }
-.pslbl { font-size: 0.85rem; font-weight: bold; text-transform: uppercase; margin-top: 5px; }
+/* TOPBAR */
+#top{background:var(--bg1);border-bottom:2px solid var(--b1);padding:0 16px;height:52px;display:flex;align-items:center;gap:12px;position:relative;z-index:200;box-shadow:var(--sh);flex-shrink:0}
+.logo{display:flex;align-items:center;gap:8px;color:var(--acc);font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:900;letter-spacing:3px;flex-shrink:0}
+.logo svg{width:24px;height:24px}
+.prow{display:flex;gap:6px;flex:1;align-items:center;min-width:0}
+.pf{background:transparent;border:none;border-bottom:1.5px solid var(--b1);color:var(--txhi);font-family:'Inter',sans-serif;font-size:.85rem;font-weight:500;padding:3px 5px;outline:none;min-width:0;transition:var(--tr)}
+.pf:focus{border-color:var(--acc)}
+.pf::placeholder{color:var(--mu)}
+.sep{color:var(--b2);font-size:.9rem}
+.ha{display:flex;gap:7px;align-items:center;flex-shrink:0}
+.cbadge{padding:4px 10px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:.78rem;font-weight:900;letter-spacing:1px;border:1.5px solid;white-space:nowrap}
+.cbadge.cpx{color:var(--warn);border-color:var(--warn);background:rgba(234,179,8,.08)}
+.cbadge.abt{color:var(--danger);border-color:var(--danger);background:rgba(239,68,68,.1);animation:fl .7s infinite}
+@keyframes fl{0%,100%{opacity:1}50%{opacity:.35}}
+.btn{padding:6px 13px;font-family:'Barlow Condensed',sans-serif;font-size:.82rem;font-weight:800;letter-spacing:.5px;cursor:pointer;border-radius:var(--rad);border:1.5px solid var(--b1);background:var(--card);color:var(--tx);transition:var(--tr)}
+.btn:hover{border-color:var(--acc);color:var(--acc)}
+.btn-a{background:var(--acc);color:#000!important;border-color:var(--acc)}
+.btn-a:hover{background:#fb923c;border-color:#fb923c}
+.iconbtn{width:34px;height:34px;border-radius:50%;border:1.5px solid var(--b1);background:var(--card);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:var(--tr)}
+.iconbtn:hover{border-color:var(--acc)}
 
-/* ── CANVAS & SCRUBBER ── */
-#chdr { padding: 10px 15px; background: var(--bg2); border-bottom: 2px solid var(--b1); font-size: 1.1rem; font-weight: bold; color: var(--txhi); }
-#cvs { flex: 1; width: 100%; display: block; }
-#scrub { padding: 15px; background: var(--card); border-top: 2px solid var(--b1); display: none; }
-.srow { display: flex; align-items: center; gap: 15px; }
-input[type=range] { flex: 1; height: 8px; accent-color: var(--acc); cursor: pointer; }
-.sval { font-size: 1.4rem; font-weight: bold; color: var(--acc); min-width: 50px; text-align: right; }
+/* LAYOUT */
+#app{display:grid;grid-template-columns:290px 1fr 306px;height:calc(100vh - 52px);overflow:hidden}
+.pan{overflow-y:auto;padding:12px;background:var(--bg1);transition:background .3s}
+.pan::-webkit-scrollbar{width:4px}
+.pan::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
+#ctr{background:var(--bg2);border-left:1.5px solid var(--b1);border-right:1.5px solid var(--b1);display:flex;flex-direction:column;overflow:hidden}
 
-/* ── RESULTS TABLES & BADGES ── */
-.status-badge { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.9rem; text-align: center; }
-.status-ok { background: rgba(34,197,94,0.2); color: var(--ok); border: 1px solid var(--ok); }
-.status-bad { background: rgba(239,68,68,0.2); color: var(--danger); border: 1px solid var(--danger); }
-.status-warn { background: rgba(234,179,8,0.2); color: var(--warn); border: 1px solid var(--warn); }
+/* SECTION HEADERS */
+.sh{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:900;letter-spacing:2.5px;color:var(--mu);text-transform:uppercase;padding:8px 0 5px;border-bottom:1.5px solid var(--b1);margin-bottom:8px;display:flex;align-items:center;gap:7px}
+.sh .dot{width:6px;height:6px;border-radius:50%;background:var(--acc);flex-shrink:0}
+.sh .dot.b{background:var(--sky)}.sh .dot.g{background:var(--ok)}.sh .dot.r{background:var(--danger)}.sh .dot.w{background:var(--warn)}
 
-.ptable { width: 100%; border-collapse: collapse; margin-bottom: 15px; background: var(--card); border: 1px solid var(--b1); border-radius: 6px; overflow: hidden; }
-.ptable th { background: var(--bg2); color: var(--mu); padding: 10px; font-size: 0.9rem; text-transform: uppercase; text-align: left; }
-.ptable td { padding: 12px 10px; border-top: 1px solid var(--b1); font-size: 1.1rem; font-weight: bold; }
-.ptable tr.active-row { background: rgba(249,115,22,0.1); }
+/* INPUT CARD */
+.ic{background:var(--card);border:1.5px solid var(--b1);border-radius:var(--rad);padding:10px 11px;margin-bottom:8px;transition:border-color .2s}
+.ic:hover{border-color:var(--b2)}
+.ic.err{border-color:rgba(239,68,68,.5);background:rgba(239,68,68,.03)}
+.row{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;gap:6px}
+.row:last-child{margin-bottom:0}
+.lb{font-family:'Inter',sans-serif;font-size:.82rem;font-weight:500;color:var(--tx);line-height:1.35}
+.lb small{display:block;font-size:.72rem;font-weight:400;color:var(--mu);margin-top:1px}
+input[type=number],input[type=text],input[type=date],select{
+  background:var(--ibg);border:1.5px solid var(--b1);color:var(--txhi);
+  font-family:'JetBrains Mono',monospace;font-size:.85rem;
+  padding:5px 7px;border-radius:3px;outline:none;transition:border-color .2s
+}
+input[type=number]:focus,select:focus,input[type=text]:focus{border-color:var(--acc)}
+input[type=number]{width:72px;text-align:right}
+select{font-family:'Inter',sans-serif;font-size:.82rem;min-width:136px;cursor:pointer}
+.un{font-family:'Inter',sans-serif;font-size:.78rem;color:var(--mu);white-space:nowrap;margin-left:2px}
+.vw{display:flex;align-items:center;gap:3px}
+.divider{height:1px;background:var(--b1);margin:8px 0}
+.errMsg{font-family:'Inter',sans-serif;font-size:.75rem;color:var(--danger);padding:3px 0;display:none}
+.errMsg.show{display:block}
 
-/* ── TELEMETRY READOUTS ── */
-.telemetry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-.t-card { background: var(--card); border: 2px solid var(--b1); border-radius: 6px; padding: 12px; }
-.t-card.main-crane { border-left: 6px solid var(--acc); }
-.t-card.tail-crane { border-left: 6px solid var(--sky); }
-.t-title { font-size: 0.85rem; font-weight: bold; color: var(--mu); text-transform: uppercase; margin-bottom: 5px; }
-.t-val { font-size: 1.8rem; font-weight: 900; color: var(--txhi); }
-.t-sub { font-size: 0.9rem; color: var(--mu); margin-top: 4px; }
-.val-ok { color: var(--ok); }
-.val-bad { color: var(--danger); }
+/* PILLS */
+.pills{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:5px}
+.pill{padding:5px 3px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--mu);background:var(--bg2);border:1.5px solid var(--b1);border-radius:3px;cursor:pointer;transition:var(--tr);line-height:1.4}
+.pill:hover{color:var(--tx);border-color:var(--b2)}
+.pill.on{color:var(--acc);background:rgba(249,115,22,.1);border-color:var(--acc)}
+.pill span{font-size:.6rem;display:block;margin-top:1px;color:inherit;opacity:.7}
 
+/* WIND */
+.wind-badge{padding:4px 10px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:.78rem;font-weight:900;letter-spacing:.5px;text-align:center;transition:var(--tr);margin-top:5px;display:inline-block}
+.bft-ok{background:rgba(34,197,94,.15);color:var(--ok);border:1.5px solid rgba(34,197,94,.3)}
+.bft-warn{background:rgba(234,179,8,.15);color:var(--warn);border:1.5px solid rgba(234,179,8,.3)}
+.bft-stop{background:rgba(239,68,68,.15);color:var(--danger);border:1.5px solid rgba(239,68,68,.3);animation:fl .9s infinite}
+
+/* PHASE STEPPER */
+#stepper{background:var(--card);border-bottom:1.5px solid var(--b1);padding:11px 16px;flex-shrink:0}
+.psrow{display:flex;align-items:flex-start}
+.psi{display:flex;flex-direction:column;align-items:center;flex:1;position:relative;cursor:pointer;user-select:none}
+.psi:not(:last-child)::after{content:'';position:absolute;top:14px;left:58%;width:84%;height:2px;background:var(--b1);z-index:0;transition:background .3s}
+.psi.done:not(:last-child)::after{background:var(--ok)}
+.psi.active:not(:last-child)::after{background:linear-gradient(90deg,var(--acc),var(--b1))}
+.pscirc{width:28px;height:28px;border-radius:50%;border:2px solid var(--b1);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--mu);background:var(--bg2);position:relative;z-index:1;transition:var(--tr)}
+.psi.done .pscirc{background:rgba(34,197,94,.15);border-color:var(--ok);color:var(--ok)}
+.psi.active .pscirc{background:rgba(249,115,22,.15);border-color:var(--acc);color:var(--acc);box-shadow:0 0 0 4px rgba(249,115,22,.12)}
+.pslbl{font-family:'Barlow Condensed',sans-serif;font-size:.67rem;font-weight:800;letter-spacing:.5px;color:var(--mu);margin-top:4px;text-align:center;line-height:1.3;max-width:58px;transition:color .2s}
+.psi.done .pslbl{color:var(--ok)}.psi.active .pslbl{color:var(--acc)}
+
+/* CANVAS HEADER */
+#chdr{background:var(--card);border-bottom:1.5px solid var(--b1);padding:8px 14px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.chtitle{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:900;letter-spacing:1.5px;color:var(--mu);text-transform:uppercase}
+.vbtns{display:flex;gap:4px}
+.vbtn{padding:4px 10px;font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:800;letter-spacing:.5px;background:transparent;border:1.5px solid var(--b1);color:var(--mu);cursor:pointer;border-radius:3px;transition:var(--tr)}
+.vbtn.on{background:rgba(249,115,22,.1);border-color:var(--acc);color:var(--acc)}
+.vbtn:hover:not(.on){border-color:var(--b2);color:var(--tx)}
+#cvs{flex:1;width:100%;display:block}
+
+/* SCRUBBER */
+#scrub{padding:9px 14px;background:var(--card);border-top:1.5px solid var(--b1);flex-shrink:0;display:none}
+.srow{display:flex;align-items:center;gap:10px}
+.slbl{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:900;letter-spacing:1.5px;color:var(--mu);white-space:nowrap;width:100px}
+input[type=range]{flex:1;accent-color:var(--acc);cursor:pointer;height:4px}
+.sval{font-family:'JetBrains Mono',monospace;font-size:.9rem;color:var(--acc);width:34px;text-align:right;flex-shrink:0}
+.animrow{display:flex;gap:8px;margin-top:7px;align-items:center}
+.aspd{font-family:'Inter',sans-serif;font-size:.78rem;color:var(--mu)}
+
+/* COMPLIANCE */
+#cstrip{background:var(--card);border-top:1.5px solid var(--b1);padding:8px 14px;flex-shrink:0}
+.chips{display:flex;gap:4px;flex-wrap:wrap}
+.chip{display:flex;align-items:center;gap:3px;padding:3px 8px;border-radius:3px;font-family:'Inter',sans-serif;font-size:.72rem;font-weight:600;border:1.5px solid;white-space:nowrap}
+.chip.p{color:var(--ok);border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.07)}
+.chip.w{color:var(--warn);border-color:rgba(234,179,8,.3);background:rgba(234,179,8,.07)}
+.chip.f{color:var(--danger);border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.1);animation:fl .8s infinite}
+
+/* RIGHT PANEL CARDS */
+.rcard{background:var(--card);border:1.5px solid var(--b1);border-radius:var(--rad);padding:9px 10px;margin-bottom:6px;position:relative;overflow:hidden;transition:var(--tr)}
+.rcard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3.5px;background:var(--b1);transition:background .2s}
+.rcard.ok::before{background:var(--ok)}.rcard.warn::before{background:var(--warn)}.rcard.bad::before{background:var(--danger)}.rcard.info::before{background:var(--sky)}
+.rr{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+.rl{font-family:'Barlow Condensed',sans-serif;font-size:.7rem;font-weight:800;letter-spacing:.5px;color:var(--mu);text-transform:uppercase}
+.rv{font-family:'JetBrains Mono',monospace;font-size:.95rem;color:var(--txhi);transition:color .2s;white-space:nowrap}
+.rv.ok{color:var(--ok)}.rv.warn{color:var(--warn)}.rv.bad{color:var(--danger)}.rv.info{color:var(--sky)}
+.rs{font-family:'Inter',sans-serif;font-size:.72rem;color:var(--mu);margin-top:2px;line-height:1.5}
+.pb{height:4px;background:var(--bg2);border-radius:2px;margin-top:6px;overflow:hidden}
+.pbf{height:100%;border-radius:2px;transition:width .5s cubic-bezier(.4,0,.2,1),background .3s}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:6px}
+
+/* PHASE CAPACITY CARD — big and clear */
+.cap-card{background:var(--card);border:2px solid var(--b1);border-radius:var(--rad);padding:10px 12px;margin-bottom:6px;position:relative;overflow:hidden}
+.cap-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--b1);transition:background .2s}
+.cap-card.ok::after{background:var(--ok)}.cap-card.warn::after{background:var(--warn)}.cap-card.bad::after{background:var(--danger)}
+.cap-crane-label{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:900;letter-spacing:1.5px;color:var(--mu);text-transform:uppercase;margin-bottom:4px}
+.cap-main-line{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.cap-load{font-family:'JetBrains Mono',monospace;font-size:1.5rem;font-weight:700;line-height:1;transition:color .2s}
+.cap-vs{font-family:'Inter',sans-serif;font-size:.78rem;color:var(--mu)}
+.cap-chart{font-family:'JetBrains Mono',monospace;font-size:.88rem;color:var(--mu2)}
+.cap-pct{font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:700;margin-left:auto;padding:2px 8px;border-radius:3px;white-space:nowrap}
+.pct-ok{background:rgba(34,197,94,.15);color:var(--ok)}
+.pct-warn{background:rgba(234,179,8,.15);color:var(--warn)}
+.pct-bad{background:rgba(239,68,68,.15);color:var(--danger);animation:fl .7s infinite}
+.cap-bar-wrap{height:6px;background:var(--bg2);border-radius:3px;margin-top:8px;overflow:hidden}
+.cap-bar{height:100%;border-radius:3px;transition:width .6s cubic-bezier(.4,0,.2,1),background .3s}
+.cap-sub{font-family:'Inter',sans-serif;font-size:.72rem;color:var(--mu);margin-top:5px;display:flex;justify-content:space-between}
+.cap-factor{color:var(--acc);font-weight:600}
+
+/* GAUGE */
+.gauge-wrap{display:flex;align-items:center;gap:10px;margin:4px 0}
+
+/* CHECKLIST */
+.cklist{margin-top:4px}
+.cki{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--b1);cursor:pointer;transition:background .15s}
+.cki:last-child{border-bottom:none}
+.cki-chk{width:18px;height:18px;border:2px solid var(--b1);border-radius:3px;flex-shrink:0;margin-top:1px;transition:var(--tr);display:flex;align-items:center;justify-content:center;font-size:.75rem;color:transparent}
+.cki.done .cki-chk{background:var(--ok);border-color:var(--ok);color:#fff}
+.who{font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:900;letter-spacing:.5px;padding:2px 6px;border-radius:3px;flex-shrink:0;margin-top:2px;border:1px solid}
+.who.op{background:rgba(56,189,248,.1);color:var(--sky);border-color:rgba(56,189,248,.25)}
+.who.rig{background:rgba(249,115,22,.1);color:var(--acc);border-color:rgba(249,115,22,.25)}
+.who.sup{background:rgba(34,197,94,.1);color:var(--ok);border-color:rgba(34,197,94,.25)}
+.cki-txt{font-family:'Inter',sans-serif;font-size:.8rem;color:var(--tx);line-height:1.55}
+.cki.done .cki-txt{color:var(--mu);text-decoration:line-through}
+.role-legend{display:flex;gap:8px;margin-bottom:7px;flex-wrap:wrap}
+.rl{padding:3px 8px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:900;letter-spacing:.5px;border:1px solid}
+
+/* SUMMARY TABLE */
+.ptab{width:100%;border-collapse:collapse;font-size:.78rem;margin-bottom:6px}
+.ptab th{background:var(--bg2);color:var(--mu);padding:5px 6px;text-align:right;border-bottom:1.5px solid var(--b1);font-family:'Barlow Condensed',sans-serif;font-size:.68rem;letter-spacing:.8px;font-weight:900}
+.ptab th:first-child{text-align:left}
+.ptab td{padding:5px 6px;border-bottom:1px solid var(--b1);text-align:right;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--tx)}
+.ptab td:first-child{text-align:left;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.82rem;color:var(--txhi)}
+.ptab tr.crit td{background:rgba(249,115,22,.06)}
+.ptab tr:hover td{background:rgba(255,255,255,.02);cursor:pointer}
+.c-ok{color:var(--ok)}.c-warn{color:var(--warn)}.c-bad{color:var(--danger);font-weight:700}
+.c-mu{color:var(--mu)}
+
+/* QUICK CHECK */
+.qchk{background:var(--card);border:2px solid var(--b1);border-radius:var(--rad);padding:9px 11px;margin-bottom:8px;display:flex;align-items:center;gap:9px;transition:var(--tr)}
+.qchk-icon{font-size:1.2rem;flex-shrink:0}
+.qchk-text{flex:1;font-family:'Inter',sans-serif;font-size:.83rem;font-weight:500;line-height:1.5}
+.qchk.ok{border-color:rgba(34,197,94,.5);background:rgba(34,197,94,.05)}
+.qchk.warn{border-color:rgba(234,179,8,.5);background:rgba(234,179,8,.05)}
+.qchk.bad{border-color:rgba(239,68,68,.5);background:rgba(239,68,68,.05)}
+
+/* SCENARIO BAR */
+.scbar{display:flex;gap:5px;margin-bottom:8px}
+.scbtn{flex:1;padding:6px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:800;letter-spacing:.5px;border:1.5px solid var(--b1);border-radius:3px;cursor:pointer;color:var(--mu);background:var(--card);transition:var(--tr)}
+.scbtn:hover{border-color:var(--b2);color:var(--tx)}
+.scbtn.saved{border-color:var(--ok);color:var(--ok)}
+.sc-panel{background:var(--card);border:1.5px solid var(--sky);border-radius:3px;padding:9px;margin-bottom:8px;display:none}
+.sc-panel.show{display:block}
+.sc2col{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.scc-title{font-family:'Barlow Condensed',sans-serif;font-size:.78rem;font-weight:800;color:var(--sky);margin-bottom:4px}
+.scc-row{display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid var(--b1);font-family:'JetBrains Mono',monospace;font-size:.72rem}
+
+/* EDU */
+.edu{background:rgba(249,115,22,.03);border:1.5px solid var(--b1);border-radius:var(--rad);margin-bottom:8px;overflow:hidden}
+.edu-hdr{display:flex;justify-content:space-between;align-items:center;padding:9px 11px;cursor:pointer;user-select:none;transition:background .15s}
+.edu-hdr:hover{background:rgba(249,115,22,.04)}
+.edu-title{font-family:'Barlow Condensed',sans-serif;font-size:.85rem;font-weight:800;letter-spacing:.5px;color:var(--acc);text-transform:uppercase;display:flex;align-items:center;gap:7px}
+.edu-ch{color:var(--mu);font-size:.8rem;transition:transform .25s}
+.edu-ch.open{transform:rotate(180deg)}
+.edu-body{padding:0 11px 11px;display:none}
+.edu-body.open{display:block}
+.eblk{margin-bottom:8px;padding:9px 10px;background:var(--card);border-radius:3px;border-left:3.5px solid var(--acc)}
+.eblk h4{font-family:'Barlow Condensed',sans-serif;font-size:.82rem;font-weight:900;letter-spacing:.5px;color:var(--acc);margin-bottom:5px;text-transform:uppercase}
+.eblk p{font-family:'Inter',sans-serif;font-size:.8rem;color:var(--tx);line-height:1.65;margin-bottom:3px}
+.eblk.b{border-left-color:var(--sky)}.eblk.b h4{color:var(--sky)}
+.eblk.g{border-left-color:var(--ok)}.eblk.g h4{color:var(--ok)}
+.eblk.w{border-left-color:var(--warn)}.eblk.w h4{color:var(--warn)}
+.eblk.r{border-left-color:var(--danger)}.eblk.r h4{color:var(--danger)}
+.efm{background:var(--bg2);border:1.5px solid var(--b1);border-radius:3px;padding:7px 9px;font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--sky);margin-top:5px;line-height:2}
+
+/* CONNECTION ADVISOR */
+.conn-opt{background:var(--card);border:1.5px solid var(--b1);border-radius:3px;padding:8px 10px;margin-bottom:5px;cursor:pointer;transition:var(--tr)}
+.conn-opt:hover{border-color:var(--b2)}
+.conn-opt.sel{border-color:var(--acc);background:rgba(249,115,22,.05)}
+.conn-head{display:flex;justify-content:space-between;align-items:center}
+.conn-name{font-family:'Barlow Condensed',sans-serif;font-size:.85rem;font-weight:800;color:var(--txhi)}
+.ctag{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:900;padding:2px 7px;border-radius:3px;letter-spacing:.5px;border:1px solid}
+.ctag-r{background:rgba(34,197,94,.1);color:var(--ok);border-color:rgba(34,197,94,.3)}
+.ctag-o{background:rgba(249,115,22,.1);color:var(--acc);border-color:rgba(249,115,22,.3)}
+.ctag-d{background:rgba(239,68,68,.1);color:var(--danger);border-color:rgba(239,68,68,.3)}
+.conn-req{font-family:'Inter',sans-serif;font-size:.77rem;color:var(--tx);margin-top:6px;line-height:1.6;display:none}
+.conn-opt.sel .conn-req{display:block}
+
+/* TAIL SECTION */
+#tailSection{display:none}
+
+/* MODAL */
+#rigModal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.75);z-index:600;align-items:center;justify-content:center}
+.modal-inner{background:var(--card);border:1.5px solid var(--b1);border-radius:var(--rad);padding:22px;max-width:700px;width:92%;max-height:82vh;overflow-y:auto}
+.rigtab{width:100%;border-collapse:collapse;font-size:.78rem}
+.rigtab th{background:var(--bg2);color:var(--mu);padding:6px 7px;text-align:left;border-bottom:1.5px solid var(--b1);font-family:'Barlow Condensed',sans-serif;font-size:.68rem;letter-spacing:.5px;font-weight:800}
+.rigtab td{padding:6px 7px;border-bottom:1px solid var(--b1);font-family:'Inter',sans-serif;color:var(--tx);font-size:.8rem}
+.rigtab tr:hover td{background:rgba(255,255,255,.02)}
+
+/* PRINT */
+@media print{
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{background:#fff!important;color:#111!important;font-size:10pt}
+  #top,#ctr,#lp .scbar,#lp .qchk,.ha,.btn,.iconbtn,#stepper{display:none!important}
+  #app{display:block;height:auto;overflow:visible;grid-template-columns:1fr}
+  #lp,#rp{overflow:visible;height:auto;background:#fff;padding:0}
+  #pr{display:block!important}
+  .rcard,.ic,.eblk{background:#f4f7fa!important;border:1px solid #ccc!important;break-inside:avoid}
+}
+#pr{display:none}
+.pp{max-width:210mm;margin:0 auto;padding:14mm}
+.ph{border-bottom:3px solid #f97316;padding-bottom:10px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:flex-end}
+.plogo{font-family:'Barlow Condensed',sans-serif;font-size:22pt;font-weight:900;color:#f97316;letter-spacing:3px}
+.ptitle{font-size:11pt;font-weight:700;color:#111;margin-top:3px}
+.pmeta{font-size:8pt;color:#555;line-height:2;text-align:right}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.pbox{background:#f4f7fa;border:1px solid #dde;border-radius:3px;padding:9px;break-inside:avoid}
+.pbox h3{font-family:'Barlow Condensed',sans-serif;font-size:8pt;font-weight:900;letter-spacing:1px;color:#f97316;text-transform:uppercase;border-bottom:1px solid #e0e0e0;padding-bottom:3px;margin-bottom:7px}
+.pr2{display:flex;justify-content:space-between;margin-bottom:3px;font-size:8pt}
+.pr2 span:first-child{color:#555}
+.pr2 span:last-child{font-weight:700;font-family:'JetBrains Mono',monospace;color:#111}
+.palert{padding:4px 9px;border-radius:3px;margin-bottom:3px;font-size:7.5pt;font-weight:700}
+.palert.p{background:#ecfdf5;color:#166534;border-left:3px solid #22c55e}
+.palert.w{background:#fefce8;color:#713f12;border-left:3px solid #eab308}
+.palert.f{background:#fef2f2;color:#991b1b;border-left:3px solid #ef4444}
+.psign{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:22px}
+.sb{border-top:1px solid #333;padding-top:7px;font-size:8pt;color:#555;line-height:2.2}
+.hidden{display:none}
 </style>
 </head>
 <body>
 
 <div id="top">
-  <div class="logo">CRANEPRO v5 <span style="font-size:0.8rem; color:var(--mu); font-weight:normal;">AIR-ROTATION SIMULATOR</span></div>
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="none">
+      <rect x="10" y="2" width="4" height="19" rx="1" fill="currentColor" opacity=".3"/>
+      <rect x="2" y="19" width="20" height="3" rx="1" fill="currentColor"/>
+      <line x1="12" y1="3" x2="21" y2="9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="21" cy="9" r="2.5" fill="currentColor"/>
+      <line x1="12" y1="3" x2="3" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".5"/>
+    </svg>
+    CRANEPRO <span style="font-size:.65rem;color:var(--mu);font-weight:400;letter-spacing:0;margin-left:2px">v5</span>
+  </div>
   <div class="prow">
-    <input class="pf" id="fProj" value="Altona Refinery Decommission">
-    <button class="btn btn-primary" onclick="window.print()">PRINT LIFT PLAN</button>
+    <input class="pf" id="fProj" placeholder="Project Name" value="Altona Refinery Decommission" style="width:190px">
+    <span class="sep">·</span>
+    <input class="pf" id="fSite" placeholder="Site" value="Altona VIC" style="width:90px">
+    <span class="sep">·</span>
+    <input class="pf" id="fDate" type="date" style="width:124px;font-family:'Inter',sans-serif">
+    <span class="sep">·</span>
+    <input class="pf" id="fEng" placeholder="Lift Supervisor" style="width:120px">
+  </div>
+  <div class="ha">
+    <div class="cbadge cpx" id="cbadge">COMPLEX LIFT — FRM-040</div>
+    <button class="iconbtn" id="thbtn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+    <button class="btn" onclick="exportPDF()">PRINT / PDF</button>
+    <button class="btn btn-a" onclick="showRigSchedule()">RIGGING SCHEDULE</button>
   </div>
 </div>
 
 <div id="app">
-
+<!-- ══════ LEFT PANEL ══════ -->
 <div class="pan" id="lp">
 
-  <div class="sh"><span class="d"></span>STRUCTURE DATA</div>
-  <div class="ic">
-    <div class="row">
-      <div class="lb">Total Weight<small>Factored base weight</small></div>
-      <div class="vw"><input type="number" id="inW" value="35" step="1" oninput="recalc()"><span class="un">t</span></div>
-    </div>
-    <div class="row">
-      <div class="lb">Total Height<small>Base to top</small></div>
-      <div class="vw"><input type="number" id="inH" value="32" step="1" oninput="recalc()"><span class="un">m</span></div>
-    </div>
-    <div class="row">
-      <div class="lb">CoG Height<small>From base</small></div>
-      <div class="vw"><input type="number" id="inCog" value="16" step="1" oninput="recalc()"><span class="un">m</span></div>
-    </div>
-    <div style="height:1px; background:var(--b1); margin:15px 0;"></div>
-    <div class="row">
-      <div class="lb">Main Crane Attach Height<small>Lugs from base</small></div>
-      <div class="vw"><input type="number" id="inHtop" value="28" step="1" oninput="recalc()"><span class="un">m</span></div>
-    </div>
-    <div class="row">
-      <div class="lb">Tail Crane Attach Height<small>Lugs from base</small></div>
-      <div class="vw"><input type="number" id="inHbot" value="3" step="1" oninput="recalc()"><span class="un">m</span></div>
-    </div>
+  <div class="qchk ok" id="quickCheck">
+    <div class="qchk-icon">✓</div>
+    <div class="qchk-text" id="qCheckText">All phases feasible — max utilization within limits</div>
   </div>
 
-  <div class="sh"><span class="d" style="background:var(--acc)"></span>MAIN CRANE (TOP)</div>
-  <div class="ic">
+  <div class="scbar">
+    <button class="scbtn" id="sc1btn" onclick="saveScenario(1)">Save Scenario A</button>
+    <button class="scbtn" id="sc2btn" onclick="saveScenario(2)">Save Scenario B</button>
+    <button class="scbtn" id="scCmpBtn" onclick="compareScenarios()" style="display:none;border-color:var(--sky);color:var(--sky)">Compare →</button>
+  </div>
+  <div class="sc-panel" id="scPanel">
+    <div class="scc-title">SCENARIO COMPARISON</div>
+    <div class="sc2col" id="scContent"></div>
+    <button class="btn" style="width:100%;margin-top:8px" onclick="clearCompare()">Clear</button>
+  </div>
+
+  <div class="sh"><span class="dot r"></span>STRUCTURE DATA</div>
+  <div class="ic" id="icStruct">
     <div class="row">
-      <div class="lb">Crane Model</div>
-      <select id="inCraneA" onchange="craneChanged('A', this.value)">
-        <option value="GR800EX" selected>Tadano GR-800EX (80t)</option>
-        <option value="SANY8000A">SANY SCC 8000A (190t)</option>
-      </select>
+      <div class="lb">Description</div>
+      <input type="text" id="fDesc" value="C-401 Distillation Column" style="width:148px;font-family:'Inter',sans-serif;font-size:.82rem">
     </div>
+    <div class="row">
+      <div class="lb">Total Weight (W)<small>Certified / weighed</small></div>
+      <div class="vw"><input type="number" id="inW" value="35" step="0.5" min="0.5" oninput="recalc()"><span class="un">t</span></div>
+    </div>
+    <div class="errMsg" id="errW">⚠ Weight must be > 0</div>
+    <div class="row">
+      <div class="lb">Total Height (H)<small>Base to very top</small></div>
+      <div class="vw"><input type="number" id="inH" value="32" step="0.5" min="2" oninput="recalc()"><span class="un">m</span></div>
+    </div>
+    <div class="row">
+      <div class="lb">Outer Diameter (OD)</div>
+      <div class="vw"><input type="number" id="inDia" value="2.4" step="0.1" min="0.1" oninput="recalc()"><span class="un">m</span></div>
+    </div>
+    <div class="row">
+      <div class="lb">CoG Height from Base<small>~50% for uniform vessels</small></div>
+      <div class="vw"><input type="number" id="inCog" value="16" step="0.5" min="0" oninput="recalc()"><span class="un">m</span></div>
+    </div>
+    <div class="errMsg" id="errCog">⚠ CoG must be less than total height</div>
+    <div class="divider"></div>
+    <div class="row">
+      <div class="lb">Top Attach Height<small>Where Crane A hooks on</small></div>
+      <div class="vw"><input type="number" id="inHtop" value="28" step="0.5" min="1" oninput="recalc()"><span class="un">m</span></div>
+    </div>
+    <div class="errMsg" id="errHtop">⚠ Must be less than total height</div>
+    <div class="row">
+      <div class="lb">Tail Attach Height<small>Where Crane B hooks on</small></div>
+      <div class="vw"><input type="number" id="inHbot" value="3" step="0.5" min="0" oninput="recalc()"><span class="un">m</span></div>
+    </div>
+    <div class="errMsg" id="errHbot">⚠ Must be below top attachment</div>
+  </div>
+
+  <div class="sh"><span class="dot" style="background:var(--acc)"></span>CRANE A — MAIN (TOP) — 80T</div>
+  <div class="ic">
+    <div class="row"><div class="lb" style="color:var(--acc);font-weight:700">Tadano GR-800EX (80t RT)</div></div>
+    <div class="lb" style="margin-bottom:5px;font-size:.78rem;color:var(--mu)">Outrigger Spread</div>
+    <div class="pills" id="pillsA">
+      <div class="pill" data-v="2.7" onclick="setSp('A',this)">2.7m<span>MIN</span></div>
+      <div class="pill" data-v="5.5" onclick="setSp('A',this)">5.5m<span>—</span></div>
+      <div class="pill" data-v="6.7" onclick="setSp('A',this)">6.7m<span>—</span></div>
+      <div class="pill on" data-v="7.3" onclick="setSp('A',this)">7.3m<span>FULL</span></div>
+    </div>
+    <div style="height:7px"></div>
     <div class="row">
       <div class="lb">Boom Length</div>
       <select id="inBA" onchange="recalc()">
-        <option value="38.3">38.3 m</option>
-        <option value="42.6" selected>42.6 m</option>
+        <option value="12.0">12.0 m</option><option value="16.4">16.4 m</option>
+        <option value="20.8">20.8 m</option><option value="29.5">29.5 m</option>
+        <option value="38.3">38.3 m</option><option value="42.6" selected>42.6 m</option>
         <option value="47.0">47.0 m</option>
       </select>
     </div>
     <div class="row">
-      <div class="lb">Phase 1-2: Cut Radius</div>
-      <div class="vw"><input type="number" id="inRcut" value="7" step="1" oninput="recalc()"><span class="un">m</span></div>
+      <div class="lb">Cut Radius<small>Ph 1&2 — crane at foundation</small></div>
+      <div class="vw"><input type="number" id="inRcut" value="7" step="0.5" min="3" oninput="recalc()"><span class="un">m</span></div>
     </div>
     <div class="row">
-      <div class="lb">Phase 3-5: Travel/Lay Radius</div>
-      <div class="vw"><input type="number" id="inRtravel" value="12" step="1" oninput="recalc()"><span class="un">m</span></div>
+      <div class="lb">Travel Radius (max)<small>Ph 3 — worst case during slew</small></div>
+      <div class="vw"><input type="number" id="inRtravel" value="12" step="0.5" min="3" oninput="recalc()"><span class="un">m</span></div>
+    </div>
+    <div class="row">
+      <div class="lb">Arrival / Lay-Down Radius<small>Ph 4&5 — crane at Point B</small></div>
+      <div class="vw"><input type="number" id="inRlay" value="9" step="0.5" min="3" oninput="recalc()"><span class="un">m</span></div>
+    </div>
+    <div class="row">
+      <div class="lb">Max Radius at 90°<small>Ph 5 — after structure horizontal</small></div>
+      <div class="vw"><input type="number" id="inRlayMax" value="13" step="0.5" min="3" oninput="recalc()"><span class="un">m</span></div>
+    </div>
+    <div class="row">
+      <div class="lb">Outrigger Pad Area (each)</div>
+      <div class="vw"><input type="number" id="inPadA" value="4.0" step="0.25" min="0.1" oninput="recalc()"><span class="un">m²</span></div>
+    </div>
+    <div class="row">
+      <div class="lb">Site GBP Limit</div>
+      <div class="vw"><input type="number" id="inGBPA" value="150" step="10" oninput="recalc()"><span class="un">kPa</span></div>
     </div>
   </div>
 
-  <div class="sh"><span class="d b"></span>TAIL CRANE (BOTTOM)</div>
+  <div class="sh"><span class="dot b"></span>CRANE B — TAIL (BOTTOM) — 40T</div>
   <div class="ic">
-    <div class="row">
-      <div class="lb">Crane Model</div>
-      <select id="inCraneB" onchange="craneChanged('B', this.value)">
-        <option value="GR400EX" selected>Tadano GR-400EX (40t)</option>
-        <option value="GR800EX">Tadano GR-800EX (80t)</option>
-      </select>
+    <div class="row"><div class="lb" style="color:var(--sky);font-weight:700">Tadano GR-400EX (40t RT)</div></div>
+    <div class="lb" style="margin-bottom:5px;font-size:.78rem;color:var(--mu)">Outrigger Spread</div>
+    <div class="pills" id="pillsB">
+      <div class="pill" data-v="2.4" onclick="setSp('B',this)">2.4m<span>MIN</span></div>
+      <div class="pill" data-v="4.5" onclick="setSp('B',this)">4.5m<span>—</span></div>
+      <div class="pill" data-v="5.5" onclick="setSp('B',this)">5.5m<span>—</span></div>
+      <div class="pill on" data-v="6.2" onclick="setSp('B',this)">6.2m<span>FULL</span></div>
     </div>
+    <div style="height:7px"></div>
     <div class="row">
       <div class="lb">Boom Length</div>
       <select id="inBB" onchange="recalc()">
-        <option value="15.0" selected>15.0 m</option>
-        <option value="20.0">20.0 m</option>
-        <option value="26.0">26.0 m</option>
+        <option value="10.0">10.0 m</option><option value="15.0" selected>15.0 m</option>
+        <option value="20.0">20.0 m</option><option value="26.0">26.0 m</option>
+        <option value="32.0">32.0 m</option><option value="36.0">36.0 m</option>
       </select>
     </div>
     <div class="row">
-      <div class="lb">Phase 5: Max Hook Radius</div>
-      <div class="vw"><input type="number" id="inRB" value="8" step="1" oninput="recalc()"><span class="un">m</span></div>
+      <div class="lb">Operating Radius (Point B)</div>
+      <div class="vw"><input type="number" id="inRB" value="8" step="0.5" min="3" oninput="recalc()"><span class="un">m</span></div>
+    </div>
+    <div class="row">
+      <div class="lb">Pad Area (each)</div>
+      <div class="vw"><input type="number" id="inPadB" value="3.0" step="0.25" min="0.1" oninput="recalc()"><span class="un">m²</span></div>
+    </div>
+    <div class="row">
+      <div class="lb">Site GBP Limit</div>
+      <div class="vw"><input type="number" id="inGBPB" value="150" step="10" oninput="recalc()"><span class="un">kPa</span></div>
     </div>
   </div>
 
-</div>
+  <div class="sh"><span class="dot"></span>RIGGING</div>
+  <div class="ic">
+    <div class="row">
+      <div class="lb">Main Sling Config</div>
+      <select id="inLegs" onchange="recalc()">
+        <option value="2">2-Leg Bridle</option><option value="4">4-Leg Bridle</option>
+      </select>
+    </div>
+    <div class="row">
+      <div class="lb">Sling Angle to Vertical</div>
+      <div class="vw"><input type="number" id="inAng" value="30" step="5" min="0" max="60" oninput="recalc()"><span class="un">°</span></div>
+    </div>
+    <div class="row">
+      <div class="lb">Sling WLL per Leg</div>
+      <div class="vw"><input type="number" id="inWLL" value="12.0" step="0.5" min="0.1" oninput="recalc()"><span class="un">t</span></div>
+    </div>
+    <div class="row">
+      <div class="lb">Rigging Mass (block + slings)</div>
+      <div class="vw"><input type="number" id="inRig" value="0.7" step="0.1" min="0" oninput="recalc()"><span class="un">t</span></div>
+    </div>
+    <div class="row">
+      <div class="lb">Sling Length (each leg)</div>
+      <div class="vw"><input type="number" id="inSlingLen" value="4" step="0.5" min="0.5" oninput="recalc()"><span class="un">m</span></div>
+    </div>
+    <div class="row">
+      <div class="lb">Shackle WLL (minimum)</div>
+      <div class="vw"><input type="number" id="inShackle" value="17" step="1" min="1" oninput="recalc()"><span class="un">t</span></div>
+    </div>
+  </div>
 
+  <div class="sh"><span class="dot w"></span>SITE CONDITIONS</div>
+  <div class="ic">
+    <div class="row">
+      <div class="lb">Wind Speed (on-site)</div>
+      <div class="vw"><input type="number" id="inWind" value="8" step="1" min="0" max="80" oninput="recalc()"><span class="un">km/h</span></div>
+    </div>
+    <div id="windScale" class="wind-badge bft-ok">Beaufort 2 — Light breeze ✓</div>
+    <div style="height:6px"></div>
+    <div class="row">
+      <div class="lb">Min Ground Clearance<small>Bottom of vessel during travel</small></div>
+      <div class="vw"><input type="number" id="inClear" value="0.5" step="0.1" min="0.1" oninput="recalc()"><span class="un">m</span></div>
+    </div>
+  </div>
+
+</div><!-- end left panel -->
+
+<!-- ══════ CENTER ══════ -->
 <div id="ctr">
   <div id="stepper">
     <div class="psrow">
-      <div class="psi" data-ph="1" onclick="setPhase(1)">
-        <div class="pscirc">1</div><div class="pslbl">Pre-Tension</div>
+      <div class="psi done" data-ph="1" onclick="setPhase(1)">
+        <div class="pscirc">1</div>
+        <div class="pslbl">Connect<br>Crane A</div>
       </div>
-      <div class="psi" data-ph="2" onclick="setPhase(2)">
-        <div class="pscirc">2</div><div class="pslbl">Oxy Cut</div>
+      <div class="psi done" data-ph="2" onclick="setPhase(2)">
+        <div class="pscirc">2</div>
+        <div class="pslbl">Oxy Cut<br>Lift Off</div>
       </div>
-      <div class="psi" data-ph="3" onclick="setPhase(3)">
-        <div class="pscirc">3</div><div class="pslbl">Travel Air</div>
+      <div class="psi active" data-ph="3" onclick="setPhase(3)">
+        <div class="pscirc">3</div>
+        <div class="pslbl">Travel<br>A→B</div>
       </div>
       <div class="psi" data-ph="4" onclick="setPhase(4)">
-        <div class="pscirc">4</div><div class="pslbl">Tail Hookup</div>
+        <div class="pscirc">4</div>
+        <div class="pslbl">Connect<br>Crane B</div>
       </div>
       <div class="psi" data-ph="5" onclick="setPhase(5)">
-        <div class="pscirc">5</div><div class="pslbl">Rotate Down</div>
+        <div class="pscirc">5</div>
+        <div class="pslbl">Rotate<br>& Lower</div>
       </div>
     </div>
   </div>
 
-  <div id="chdr">VISUALIZER: <span id="cvTitle"></span></div>
+  <div id="chdr">
+    <span class="chtitle" id="cvTitle">PHASE 3 — TRAVEL: CRANE A HOLDS ALL LOAD</span>
+    <div class="vbtns">
+      <button class="vbtn on" onclick="setView('elev',this)">ELEVATION</button>
+      <button class="vbtn" onclick="setView('plan',this)">PLAN VIEW</button>
+      <button class="vbtn" id="btnZone" onclick="toggleZone()">EXCL. ZONE</button>
+    </div>
+  </div>
+
   <canvas id="cvs"></canvas>
 
   <div id="scrub">
     <div class="srow">
-      <div class="slbl">ROTATION PULL</div>
+      <span class="slbl">ROTATION ANGLE</span>
       <input type="range" id="sAngle" min="0" max="90" value="0" step="1" oninput="onScrub()">
-      <div class="sval" id="sVal">0°</div>
+      <span class="sval" id="sVal">0°</span>
     </div>
+    <div class="animrow">
+      <button class="btn" id="animBtn" onclick="toggleAnim()">▶ Animate</button>
+      <span class="aspd">Speed:</span>
+      <select id="animSpd" style="font-family:'Inter',sans-serif;font-size:.78rem;padding:3px 6px;min-width:80px">
+        <option value="80">Slow</option><option value="40" selected>Normal</option><option value="15">Fast</option>
+      </select>
+      <span id="animPhase" style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--acc)"></span>
+    </div>
+  </div>
+
+  <div id="cstrip">
+    <div class="sh" style="margin-bottom:6px;padding-top:4px"><span class="dot"></span>COMPLIANCE — PRO-028 / AS 1418</div>
+    <div class="chips" id="chips"></div>
   </div>
 </div>
 
+<!-- ══════ RIGHT PANEL ══════ -->
 <div class="pan" id="rp">
 
-  <div class="sh"><span class="d"></span>ALL PHASES — CAPACITY CHECK</div>
-  <table class="ptable">
-    <thead>
-      <tr>
-        <th>Phase Description</th>
-        <th>Main Util</th>
-        <th>Tail Util</th>
-        <th>Safety Status</th>
-      </tr>
-    </thead>
-    <tbody id="capacityTbody">
-      </tbody>
+  <div class="sh"><span class="dot"></span><span id="rTitle">PHASE 3 — RESULTS</span></div>
+
+  <!-- PER-PHASE CAPACITY CARD — Crane A -->
+  <div class="cap-card" id="capCardA">
+    <div class="cap-crane-label">🏗 Crane A — GR-800EX (80t) — Current Phase Load</div>
+    <div class="cap-main-line">
+      <div class="cap-load" id="capLoadA">—</div>
+      <div class="cap-vs">t</div>
+      <div class="cap-chart" id="capChartA">/ — t available</div>
+      <div class="cap-pct" id="capPctA">—%</div>
+    </div>
+    <div class="cap-bar-wrap"><div class="cap-bar" id="capBarA" style="width:0%"></div></div>
+    <div class="cap-sub">
+      <span id="capSubFactorA"></span>
+      <span id="capSubRadA"></span>
+    </div>
+  </div>
+
+  <!-- Phase 5 Crane B cap card -->
+  <div class="cap-card" id="capCardB" style="display:none">
+    <div class="cap-crane-label">🔵 Crane B — GR-400EX (40t) — Phase 5 Load</div>
+    <div class="cap-main-line">
+      <div class="cap-load" id="capLoadB">—</div>
+      <div class="cap-vs">t</div>
+      <div class="cap-chart" id="capChartB">/ — t available</div>
+      <div class="cap-pct" id="capPctB">—%</div>
+    </div>
+    <div class="cap-bar-wrap"><div class="cap-bar" id="capBarB" style="width:0%"></div></div>
+    <div class="cap-sub">
+      <span style="color:var(--sky)">T_tail — constant load</span>
+      <span id="capSubRadB"></span>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="rcard" id="mcGBP">
+      <div class="rr"><span class="rl">GBP — Crane A</span><span class="rv" id="mvGBP">—</span></div>
+      <div class="rs" id="msGBP">—</div>
+    </div>
+    <div class="rcard" id="mcSling">
+      <div class="rr"><span class="rl">Sling / Leg</span><span class="rv" id="mvSling">—</span></div>
+      <div class="rs" id="msSling">—</div>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="rcard" id="mcSwing">
+      <div class="rr"><span class="rl">Swing Radius</span><span class="rv" id="mvSwing">—</span></div>
+      <div class="rs" id="msSwing">Pendulum @ 1 m/s</div>
+    </div>
+    <div class="rcard" id="mcClear">
+      <div class="rr"><span class="rl">Clearance</span><span class="rv" id="mvClear">—</span></div>
+      <div class="rs" id="msClear">Base to ground</div>
+    </div>
+  </div>
+
+  <div id="tailSection">
+    <div class="sh" style="margin-top:2px"><span class="dot b"></span>PHASE 5 — LOAD SHARING</div>
+    <div class="rcard info" style="margin-bottom:6px">
+      <div class="rr"><span class="rl">Load Split</span><span class="rv info" id="mvSplit">—</span></div>
+      <div style="height:8px;background:var(--bg2);border-radius:4px;margin-top:7px;overflow:hidden">
+        <div id="shareBar" style="height:100%;transition:all .5s;border-radius:4px"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--acc)" id="shlMain">A —</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--sky)" id="shlTail">B —</span>
+      </div>
+      <div class="rs" style="margin-top:4px">Both loads are CONSTANT throughout rotation. Only Crane A radius changes.</div>
+    </div>
+    <div class="sh"><span class="dot"></span>ROTATION ANALYSIS (0°→90°)</div>
+    <table class="ptab">
+      <thead><tr><th>°</th><th>A-Rad</th><th>A-Cap</th><th>A%</th><th>B%</th></tr></thead>
+      <tbody id="rotBody"></tbody>
+    </table>
+    <div style="font-family:'Inter',sans-serif;font-size:.72rem;color:var(--mu);padding:3px 0 8px">Highlighted row = worst case for Crane A</div>
+  </div>
+
+  <div class="sh" style="margin-top:2px"><span class="dot"></span>ALL PHASES — QUICK VIEW</div>
+  <table class="ptab">
+    <thead><tr><th>Phase</th><th>Factor</th><th>Radius</th><th>A%</th><th>GBP</th></tr></thead>
+    <tbody id="allPhaseTbody"></tbody>
   </table>
 
-  <div class="sh" style="margin-top:20px;"><span class="d"></span>LIVE PHASE TELEMETRY</div>
-  
-  <div class="t-card main-crane" style="margin-bottom: 15px;">
-    <div class="t-title">Main Crane (Top Hook)</div>
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <div>
-        <div class="t-val" id="gvA">—</div>
-        <div class="t-sub" id="gsA">—</div>
+  <div class="rcard info" style="margin-bottom:6px">
+    <div class="rr"><span class="rl">Exclusion Zone</span><span class="rv info" id="mvExcl">—</span></div>
+    <div class="rs">H × 1.5 — barrier placement from base</div>
+  </div>
+
+  <div class="sh" style="margin-top:2px"><span class="dot g"></span>PHASE CHECKLIST</div>
+  <div class="role-legend">
+    <span class="rl op" style="background:rgba(56,189,248,.1);color:var(--sky);border-color:rgba(56,189,248,.25)">OP Crane Operator</span>
+    <span class="rl rig" style="background:rgba(249,115,22,.1);color:var(--acc);border-color:rgba(249,115,22,.25)">RIG Rigger / Dogman</span>
+    <span class="rl sup" style="background:rgba(34,197,94,.1);color:var(--ok);border-color:rgba(34,197,94,.25)">SUP Supervisor</span>
+  </div>
+  <div class="cklist" id="checklist"></div>
+
+  <div class="edu" style="margin-top:8px">
+    <div class="edu-hdr" onclick="toggleEdu('connEdu')">
+      <div class="edu-title">🔗 Top Connection Methods</div>
+      <span class="edu-ch" id="connEduCh">▼</span>
+    </div>
+    <div class="edu-body" id="connEdu">
+      <div class="conn-opt sel" onclick="selConn(this)">
+        <div class="conn-head"><span class="conn-name">A — Fabricated Lifting Lug</span><span class="ctag ctag-r">RECOMMENDED</span></div>
+        <div class="conn-req">Welded to top head or nozzle by WPS-certified welder. Designed by structural engineer, rated 2× working load. NDT weld inspection required before use.</div>
       </div>
-      <div style="text-align:right;">
-        <div class="t-sub">Radius: <strong style="color:var(--txhi)" id="gRadA">—</strong></div>
-        <div class="t-sub">Chart Cap: <strong style="color:var(--txhi)" id="gCapA">—</strong></div>
+      <div class="conn-opt" onclick="selConn(this)">
+        <div class="conn-head"><span class="conn-name">B — Beam Through Manway</span><span class="ctag ctag-o">SUITABLE</span></div>
+        <div class="conn-req">For vessels >1.5m OD. Structural beam through top manway. Engineer must confirm manway flanges carry point loads without deformation.</div>
+      </div>
+      <div class="conn-opt" onclick="selConn(this)">
+        <div class="conn-head"><span class="conn-name">C — Plate Clamp on Cap</span><span class="ctag ctag-o">SUITABLE</span></div>
+        <div class="conn-req">Certified plate clamps rated above factored load. Engineer verifies plate thickness, weld integrity, and corrosion status.</div>
+      </div>
+      <div class="conn-opt" onclick="selConn(this)">
+        <div class="conn-head"><span class="conn-name">D — Choker Sling Around Shell</span><span class="ctag ctag-d">LAST RESORT</span></div>
+        <div class="conn-req">Most thin-wall vessels cannot withstand radial crushing force. Do NOT use on any pressure vessel without shell collapse calculation by engineer.</div>
       </div>
     </div>
   </div>
 
-  <div class="t-card tail-crane" id="tailPanel" style="display:none;">
-    <div class="t-title">Tail Crane (Bottom Hook)</div>
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <div>
-        <div class="t-val" id="gvB">—</div>
-        <div class="t-sub" id="gsB">—</div>
+  <div class="edu">
+    <div class="edu-hdr" onclick="toggleEdu('opEdu')">
+      <div class="edu-title">📐 Engineering — Why It Works This Way</div>
+      <span class="edu-ch" id="opEduCh">▼</span>
+    </div>
+    <div class="edu-body" id="opEdu">
+      <div class="eblk r">
+        <h4>Phase 2: The Most Dangerous Moment</h4>
+        <p>At the instant of oxy-cut separation, the crane goes from zero to full vessel weight instantaneously. PRO-028 §7.1.3 mandates ×1.5 factor precisely for this dynamic shock. The ×1.5 factor covers the impact load — without pre-tension the crane would see 2–3× the static weight at separation.</p>
       </div>
-      <div style="text-align:right;">
-        <div class="t-sub">Radius: <strong style="color:var(--txhi)" id="gRadB">—</strong></div>
-        <div class="t-sub">Chart Cap: <strong style="color:var(--txhi)" id="gCapB">—</strong></div>
+      <div class="eblk w">
+        <h4>Phase 3: The Pendulum Problem</h4>
+        <p>A 32m column hanging from a boom tip is a 32m pendulum with a period of ~11 seconds. At 1 m/s slew speed, centripetal acceleration adds approximately 0.1g radially, swinging the base outward by 2–4m. This increases effective radius, reducing chart capacity. Taglines are mandatory — they are not optional.</p>
+        <div class="efm">Swing angle ≈ arctan(v² / (g·L))<br>v = slew tip speed (m/s), L = pendulum length (m)<br>Extra radius = L × sin(swing angle)</div>
+      </div>
+      <div class="eblk g">
+        <h4>Phase 5: Constant Load Physics</h4>
+        <p>As the vessel rotates from vertical to horizontal, the load on each crane stays completely constant. The geometry cancels out. What changes is only Crane A's radius — which increases as the boom luffs out, reducing chart capacity. Always check at 90°.</p>
+        <div class="efm">T_main = W × (h_CoG − h_tail) ÷ (h_top − h_tail)<br>T_tail = W − T_main  [both constant 0°→90°]<br>R_main_at_90° = R_lay + (h_top − h_tail)</div>
+      </div>
+      <div class="eblk b">
+        <h4>GBP Calculation</h4>
+        <p>Ground bearing pressure accounts for dynamic load factor (×1.35 per PRO-028), crane self-weight, and hook load. Each outrigger pad carries one quarter of the total. Compare against geotechnical report bearing capacity — not just visual assessment.</p>
+        <div class="efm">GBP = (GVW + Hook Load) × 1.35 × 9.81 / Pad Area (kPa)</div>
       </div>
     </div>
   </div>
 
+</div><!-- end right panel -->
+</div><!-- end app -->
+
+<!-- RIGGING MODAL -->
+<div id="rigModal">
+  <div class="modal-inner">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:900;color:var(--acc);letter-spacing:1px">RIGGING SCHEDULE</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-a" onclick="window.print()">Print</button>
+        <button class="btn" onclick="$('rigModal').style.display='none'">Close</button>
+      </div>
+    </div>
+    <table class="rigtab" id="rigScheduleTable"></table>
+  </div>
 </div>
-</div>
+
+<!-- PRINT REPORT -->
+<div id="pr"><div class="pp">
+  <div class="ph">
+    <div><div class="plogo">CRANEPRO v5</div><div class="ptitle" id="pr_title">Structural Lay-Down — Lift Plan</div><div style="font-size:8pt;color:#888;margin-top:2px">Generated: <span id="pr_dt"></span></div></div>
+    <div class="pmeta" id="pr_meta"></div>
+  </div>
+  <div class="pgrid" id="pr_grid"></div>
+  <div style="margin:10px 0"><div style="font-family:'Barlow Condensed',sans-serif;font-size:8pt;font-weight:900;letter-spacing:1px;color:#f97316;border-bottom:1px solid #ddd;padding-bottom:3px;margin-bottom:6px;text-transform:uppercase">Compliance Status</div><div id="pr_comp"></div></div>
+  <div class="psign">
+    <div class="sb">Crane Operator / Dogman<br>Name: ___________________<br>Licence No: ______________<br>Signature: _______________<br>Date: ___________________</div>
+    <div class="sb">Lift Supervisor / Engineer<br>Name: ___________________<br>Qualification: ____________<br>Signature: _______________<br>Date: ___________________</div>
+  </div>
+  <div style="margin-top:14px;padding:7px;background:#fef9ee;border:1px solid #e8c040;font-size:7pt;color:#554;border-radius:3px">
+    <strong>DISCLAIMER:</strong> This is a planning tool only. All structural lay-down operations require a Complex Lift Plan (FRM-040) and sign-off by a structural engineer. Top connection must be engineer-certified. Dynamic factors must reflect actual site conditions. Ground bearing pressures must be verified against current geotechnical data. This output does not constitute an engineered lift plan.
+  </div>
+</div></div>
 
 <script>
-// ═══════════════════════════════════════
-// DATA & CHARTS (Simplified for clarity)
-// ═══════════════════════════════════════
-const CRANE_DATA = {
-  SANY8000A: {name:'SANY 190t', maxCap:190, block:11.2},
-  GR800EX: {name:'Tadano 80t', maxCap:80, block:0.7},
-  GR400EX: {name:'Tadano 40t', maxCap:40, block:0.4}
+// ══════════════════════════════════════════════════════
+// LOAD CHARTS — GR-800EX (80t) & GR-400EX (40t)
+// ══════════════════════════════════════════════════════
+const CH800={
+  '12.0':{3:80,3.5:74.2,4:67,4.5:60.9,5:55.7,5.5:51.1,6:46.2,6.5:42.1,7:38.6,7.5:35.6,8:33,9:24},
+  '16.4':{3:46.6,4:46.6,5:46.6,5.5:46.6,6:45.8,6.5:41.7,7:38.3,7.5:34.4,8:31,9:24.9,10:20.2,11:16.7,12:14,14:10.2},
+  '20.8':{3:40.9,4:40.9,5:38.9,5.5:36.8,6:34.9,7:31.6,8:28.1,9:23.3,10:19.7,12:13.6,14:9.9,16:7.3,18:5.5},
+  '29.5':{5:18.2,6:18.2,7:18.2,8:18.2,9:18.2,10:18.2,11:16.6,12:14.6,14:11.2,16:8.6,18:6.7,20:5.3,22:4.2,24:3.3,26:2.5},
+  '38.3':{7:15.1,8:15.1,9:15.1,10:14.6,12:13,14:11.3,16:9.1,18:7.2,20:5.8,22:4.7,24:3.8,26:3,28:2.4,30:1.9,32:1.5,34:1.1},
+  '42.6':{9:11,10:11,11:10.7,12:10.2,14:9.3,16:8.5,18:7.7,20:6.6,22:5.4,24:5,26:4.2,28:3.6,30:3.1,32:2.6,34:2.2,36:1.4,38:1.1,40:0.9},
+  '47.0':{8:13,9:12.8,10:12.1,11:11.3,12:10.7,14:9,16:8.1,18:7.4,20:6.8,22:5.9,24:5,26:4.2,28:3.6,30:3.1,32:2.6,34:2.2}
 };
-
-const CH_GR800={
-  '38.3':{7:15.1,8:15.1,9:15.1,10:14.6,12:13,14:11.3,16:9.1,18:7.2,20:5.8},
-  '42.6':{9:11,10:11,11:10.7,12:10.2,14:9.3,16:8.5,18:7.7,20:6.6,22:5.4},
-  '47.0':{8:13,9:12.8,10:12.1,11:11.3,12:10.7,14:9,16:8.1,18:7.4,20:6.8}
-};
-const CH_GR400={
+const CH400={
+  '10.0':{3:40,3.5:35,4:29,5:22,6:17,7:13,8:10,9:7.8},
   '15.0':{3:25,4:22,5:18,6:14,7:10.5,8:8,9:6.2,10:4.8,12:3.2},
   '20.0':{4:18,5:15,6:12,7:9.5,8:7.5,9:6,10:4.8,12:3.3,14:2.3},
-  '26.0':{5:12,6:10,7:8.5,8:7,9:5.8,10:4.6,12:3.3,14:2.4,16:1.8}
+  '26.0':{5:12,6:10,7:8.5,8:7,9:5.8,10:4.6,12:3.3,14:2.4,16:1.8},
+  '32.0':{7:8.5,8:7.2,9:6.2,10:5.2,12:3.8,14:2.8,16:2.1,18:1.5},
+  '36.0':{8:7.5,9:6.4,10:5.5,12:4.2,14:3.2,16:2.4,18:1.7,20:1.2}
 };
+const SPF800={'7.3':1,'6.7':0.93,'5.5':0.79,'2.7':0.42};
+const SPF400={'6.2':1,'5.5':0.92,'4.5':0.80,'2.4':0.44};
+const GVW800=51.4, BLK800=0.7, GVW400=28.2, BLK400=0.4;
 
-function lookupCap(model, boom, r) {
-  if (model === 'SANY8000A') return (r<8) ? 190 : Math.max(0, 126.25 - (r * 1.175));
-  const chart = model === 'GR800EX' ? CH_GR800 : CH_GR400;
-  const t = chart[boom]; if(!t) return null;
-  const rs = Object.keys(t).map(Number).sort((a,b)=>a-b);
-  if(r < rs[0]) return t[rs[0]];
-  if(r > rs[rs.length-1]) return null;
-  for(let i=0; i<rs.length-1; i++) {
-    if(r >= rs[i] && r <= rs[i+1]) {
-      return t[rs[i]] + ((r - rs[i]) / (rs[i+1] - rs[i])) * (t[rs[i+1]] - t[rs[i]]);
+function lookupCap(ch,spf,boom,r,sp){
+  const t=ch[boom];if(!t)return null;
+  const sf=spf[sp]||1;
+  const rs=Object.keys(t).map(Number).sort((a,b)=>a-b);
+  if(r<rs[0])return t[rs[0]]*sf;
+  if(r>rs[rs.length-1])return null;
+  for(let i=0;i<rs.length-1;i++){
+    if(r>=rs[i]&&r<=rs[i+1]){
+      return(t[rs[i]]+(r-rs[i])/(rs[i+1]-rs[i])*(t[rs[i+1]]-t[rs[i]]))*sf;
     }
   }
   return null;
 }
 
-// ═══════════════════════════════════════
-// STATE & MATH
-// ═══════════════════════════════════════
-let PHASE = 4; // Start on Phase 4 as requested to show in-air hookup
-let sAngle = 0;
-let D = {};
-const $ = id => document.getElementById(id);
-const fv = id => parseFloat($(id).value) || 0;
+// ══════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════
+let PHASE=3,VIEW='elev',spA='7.3',spB='6.2';
+let sAngle=0,animOn=false,showZone=false;
+let D={},scenarios={1:null,2:null},chkState={};
+const $=id=>document.getElementById(id);
+const fv=id=>parseFloat($(id).value)||0;
 
-function recalc() {
-  const W=fv('inW'), H=fv('inH'), hCog=fv('inCog'), hTop=fv('inHtop'), hBot=fv('inHbot');
-  const rCut=fv('inRcut'), rTravel=fv('inRtravel'), rB=fv('inRB');
-  
-  const selA=$('inCraneA').value, selB=$('inCraneB').value;
-  const boomA=$('inBA').value, boomB=$('inBB').value;
-  const blkA=CRANE_DATA[selA].block, blkB=CRANE_DATA[selB].block;
+function sv(id,v){const e=$(id);if(e)e.textContent=v}
+function pCol(p){return p===null?'var(--danger)':p>=100?'var(--danger)':p>=80?'var(--warn)':'var(--ok)'}
+function pCls(p){return p===null||p>=100?'bad':p>=80?'warn':'ok'}
+function pPctCls(p){return p===null||p>=100?'pct-bad':p>=80?'pct-warn':'pct-ok'}
 
-  const arm=hTop-hBot, cogArm=hCog-hBot;
+// ══════════════════════════════════════════════════════
+// VALIDATION
+// ══════════════════════════════════════════════════════
+function validate(){
+  const W=fv('inW'),H=fv('inH'),hCog=fv('inCog'),hTop=fv('inHtop'),hBot=fv('inHbot');
+  let ok=true;
+  const show=(id,s)=>$(id).classList.toggle('show',s);
+  show('errW',W<=0);if(W<=0)ok=false;
+  show('errCog',hCog>=H);if(hCog>=H)ok=false;
+  show('errHtop',hTop>=H);if(hTop>=H)ok=false;
+  show('errHbot',hBot>=hTop);if(hBot>=hTop)ok=false;
+  $('icStruct').classList.toggle('err',!ok);
+  return ok;
+}
+
+// ══════════════════════════════════════════════════════
+// WIND
+// ══════════════════════════════════════════════════════
+function windBft(kmh){
+  if(kmh<=5)return{n:0,d:'Calm',ok:true};
+  if(kmh<=11)return{n:1,d:'Light air',ok:true};
+  if(kmh<=19)return{n:2,d:'Light breeze',ok:true};
+  if(kmh<=28)return{n:3,d:'Gentle breeze',ok:true};
+  if(kmh<=38)return{n:4,d:'Moderate breeze',ok:true,warn:true};
+  if(kmh<=49)return{n:5,d:'Fresh breeze — STOP',ok:false};
+  return{n:6,d:'Too strong — ABORT',ok:false};
+}
+
+// ══════════════════════════════════════════════════════
+// CORE CALC
+// ══════════════════════════════════════════════════════
+function recalc(){
+  if(!validate())return;
+  const W=fv('inW'),H=fv('inH'),hCog=fv('inCog'),hTop=fv('inHtop'),hBot=fv('inHbot');
+  const rig=fv('inRig'),legs=parseInt($('inLegs').value)||2;
+  const angDeg=fv('inAng'),angRad=angDeg*Math.PI/180;
+  const wll=fv('inWLL'),slingLen=fv('inSlingLen');
+  const rCut=fv('inRcut'),rTravel=fv('inRtravel'),rLay=fv('inRlay'),rLayMax=fv('inRlayMax'),rB=fv('inRB');
+  const padA=fv('inPadA'),padB=fv('inPadB'),gbpLA=fv('inGBPA'),gbpLB=fv('inGBPB');
+  const bA=$('inBA').value,bB=$('inBB').value;
+  const dia=fv('inDia'),wind=fv('inWind'),minClear=fv('inClear');
+
+  const arm=hTop-hBot,cogArm=hCog-hBot;
   const tMain=arm>0?W*(cogArm/arm):W*0.5;
   const tTail=W-tMain;
+  const bft=windBft(wind);
 
-  // Phase 1
-  const c1=lookupCap(selA, boomA, rCut);
-  const u1=c1 ? (W*1.0)/(c1-blkA)*100 : null;
-  
-  // Phase 2
-  const c2=c1;
-  const u2=c2 ? (W*1.5)/(c2-blkA)*100 : null;
-  
-  // Phase 3 & 4 (Travel / Hold in Air)
-  const c3=lookupCap(selA, boomA, rTravel);
-  const u3=c3 ? (W*1.5)/(c3-blkA)*100 : null;
+  // Phase 1 — pretension (×1.0)
+  const hl1=(W+rig)*1.0;
+  const c1=lookupCap(CH800,SPF800,bA,rCut,spA);
+  const u1=(c1!==null&&c1-BLK800>0)?hl1/(c1-BLK800)*100:null;
+  const gbp1=(GVW800+hl1)*1.35*9.81/padA;
 
-  // Phase 5 (Rotation in Air)
-  // Main crane radius is constant (rTravel). Tail crane tracks to maintain rB.
-  const c5A = c3; 
-  const c5B = lookupCap(selB, boomB, rB);
-  
-  const hlA_5 = tMain * 1.25;
-  const hlB_5 = tTail * 1.25;
-  const u5A = c5A ? hlA_5/(c5A-blkA)*100 : null;
-  const u5B = c5B ? hlB_5/(c5B-blkB)*100 : null;
+  // Phase 2 — oxy cut (×1.5 — PRO-028 §7.1.3)
+  const hl2=(W+rig)*1.5;
+  const u2=(c1!==null&&c1-BLK800>0)?hl2/(c1-BLK800)*100:null;
+  const gbp2=(GVW800+hl2)*1.35*9.81/padA;
 
-  D = { W,H,hCog,hTop,hBot,arm,tMain,tTail, rCut,rTravel,rB, selA,selB,boomA,boomB,blkA,blkB,
-        u1,u2,u3,u5A,u5B, hlA_5,hlB_5, c1,c3,c5A,c5B };
+  // Phase 3 — travel (×1.5 — Crane A only)
+  const hl3=(W+rig)*1.5;
+  const c3=lookupCap(CH800,SPF800,bA,rTravel,spA);
+  const u3=(c3!==null&&c3-BLK800>0)?hl3/(c3-BLK800)*100:null;
+  const gbp3=(GVW800+hl3)*1.35*9.81/padA;
+  // Pendulum swing — arctan(v²/gL)
+  const pendL=hTop*0.9;
+  const swingRad=Math.atan2(1.0*1.0,9.81*pendL);
+  const swingRadius=rTravel+pendL*Math.sin(swingRad);
+  // Boom clearance — simplified geometric
+  const bA_n=parseFloat(bA);
+  const boomTipH=Math.sqrt(Math.max(0,bA_n*bA_n-rTravel*rTravel))+3.8;
+  const clearBot=boomTipH-hTop;
 
-  updateUI();
-  drawCanvas();
+  // Phase 4 — Crane B connects, Crane A still holds all (×1.5 at rLay)
+  const hl4=(W+rig)*1.5;
+  const c4=lookupCap(CH800,SPF800,bA,rLay,spA);
+  const u4=(c4!==null&&c4-BLK800>0)?hl4/(c4-BLK800)*100:null;
+  const gbp4=(GVW800+hl4)*1.35*9.81/padA;
+
+  // Phase 5 — rotate (×1.25)
+  const hlA=(tMain+rig*(tMain/W))*1.25;
+  const hlB=(tTail+rig*(tTail/W))*1.25;
+  // Crane A worst case = max radius at 90°
+  const c5A=lookupCap(CH800,SPF800,bA,rLayMax,spA);
+  const u5A=(c5A!==null&&c5A-BLK800>0)?hlA/(c5A-BLK800)*100:null;
+  const gbp5A=(GVW800+hlA)*1.35*9.81/padA;
+  // Crane B at its operating radius
+  const c5B=lookupCap(CH400,SPF400,bB,rB,spB);
+  const u5B=(c5B!==null&&c5B-BLK400>0)?hlB/(c5B-BLK400)*100:null;
+  const gbp5B=(GVW400+hlB)*1.35*9.81/padB;
+  // Sling check
+  const tensA=(hl2/legs)/Math.cos(angRad);
+  const sUtilA=tensA/wll*100;
+  const exclR=H*1.5;
+
+  // Live Phase 5 tracking
+  const th5=sAngle*Math.PI/180;
+  const rNow=rLay+(rLayMax-rLay)*Math.sin(th5);
+  const c5now=lookupCap(CH800,SPF800,bA,rNow,spA);
+  const u5now=(c5now!==null&&c5now-BLK800>0)?hlA/(c5now-BLK800)*100:null;
+
+  D={W,H,hCog,hTop,hBot,arm,tMain,tTail,rig,legs,angDeg,angRad,wll,slingLen,dia,
+    hl1,hl2,hl3,hl4,hlA,hlB,c1,c3,c4,c5A,c5B,c5now,rNow,
+    u1,u2,u3,u4,u5A,u5B,u5now,gbp1,gbp2,gbp3,gbp4,gbp5A,gbp5B,gbpLA,gbpLB,
+    rCut,rTravel,rLay,rLayMax,rB,padA,padB,tensA,sUtilA,bA,bB,
+    wind,bft,pendL,swingRad,swingRadius,clearBot,minClear,exclR,spA,spB};
+
+  updatePhasePanel();buildAllPhases();buildCompliance();buildChecklist();buildRotTable();
+  updateWindUI();quickCheck();drawCanvas();
 }
 
-// ═══════════════════════════════════════
-// UI UPDATES
-// ═══════════════════════════════════════
-function setPhase(n) {
-  PHASE = n;
-  document.querySelectorAll('.psi').forEach(el => {
-    const ph = parseInt(el.dataset.ph);
-    el.className = 'psi';
-    if(ph < n) el.classList.add('done');
-    else if(ph === n) el.classList.add('active');
-  });
-  
-  if (n !== 5) {
-      sAngle = 0;
-      $('sAngle').value = 0;
-      $('sVal').textContent = '0°';
-  }
-  
-  $('scrub').style.display = (n === 5) ? 'block' : 'none';
-  recalc();
+// ══════════════════════════════════════════════════════
+// CAPACITY CARD HELPER
+// ══════════════════════════════════════════════════════
+function setCapCard(idSuffix,hl,cap,blk,util,factor,radius,color){
+  const load=hl.toFixed(2);
+  const avail=cap!==null?(cap-blk).toFixed(1):'OOB';
+  const pct=util!==null?Math.round(util):null;
+  const pctTxt=pct===null?'OOB':pct+'%';
+  const col=pCol(util);
+  $('capLoadA').style.color=color; // default orange
+  $('capLoad'+idSuffix).style.color=col;
+  sv('capLoad'+idSuffix,load);
+  sv('capChart'+idSuffix,'/ '+avail+'t chart');
+  $('capPct'+idSuffix).textContent=pctTxt;
+  $('capPct'+idSuffix).className='cap-pct '+pPctCls(util);
+  const barW=pct===null?100:Math.min(pct,100);
+  $('capBar'+idSuffix).style.width=barW+'%';
+  $('capBar'+idSuffix).style.background=col;
+  const card=$('capCard'+idSuffix);
+  card.className='cap-card '+pCls(util);
+  sv('capSubFactor'+idSuffix,factor);
+  sv('capSubRad'+idSuffix,radius);
 }
 
-function onScrub() {
-  sAngle = parseInt($('sAngle').value);
-  $('sVal').textContent = sAngle + '°';
-  recalc();
-}
-
-function getStatusBadge(u) {
-    if (u === null) return `<div class="status-badge status-bad">OOB / FAIL</div>`;
-    if (u >= 100) return `<div class="status-badge status-bad">✗ ${Math.round(u)}% OVERLOAD</div>`;
-    if (u >= 80) return `<div class="status-badge status-warn">⚠ ${Math.round(u)}% HIGH</div>`;
-    return `<div class="status-badge status-ok">✓ ${Math.round(u)}% SAFE</div>`;
-}
-
-function updateUI() {
+// ══════════════════════════════════════════════════════
+// PHASE PANEL UPDATE
+// ══════════════════════════════════════════════════════
+function updatePhasePanel(){
   const d=D;
-  
-  // 1. Build Capacity Table
-  $('capacityTbody').innerHTML = `
-    <tr class="${PHASE===1?'active-row':''}">
-      <td>Phase 1: Pre-Tension (Static)</td>
-      <td>${getStatusBadge(d.u1)}</td>
-      <td><div class="status-badge">NOT CONNECTED</div></td>
-      <td>${d.u1<100 ? '✅ PROCEED' : '❌ STOP'}</td>
-    </tr>
-    <tr class="${PHASE===2?'active-row':''}">
-      <td>Phase 2: Oxy Cut (1.5x Dyn)</td>
-      <td>${getStatusBadge(d.u2)}</td>
-      <td><div class="status-badge">NOT CONNECTED</div></td>
-      <td>${d.u2<100 ? '✅ PROCEED' : '❌ STOP'}</td>
-    </tr>
-    <tr class="${PHASE===3?'active-row':''}">
-      <td>Phase 3: Air Travel</td>
-      <td>${getStatusBadge(d.u3)}</td>
-      <td><div class="status-badge">NOT CONNECTED</div></td>
-      <td>${d.u3<100 ? '✅ PROCEED' : '❌ STOP'}</td>
-    </tr>
-    <tr class="${PHASE===4?'active-row':''}">
-      <td>Phase 4: Tail Connect (In Air)</td>
-      <td>${getStatusBadge(d.u3)}</td>
-      <td><div class="status-badge status-ok">✓ 0% SLACK</div></td>
-      <td>${d.u3<100 ? '✅ PROCEED' : '❌ STOP'}</td>
-    </tr>
-    <tr class="${PHASE===5?'active-row':''}">
-      <td>Phase 5: Rotation & Lay-Down</td>
-      <td>${getStatusBadge(d.u5A)}</td>
-      <td>${getStatusBadge(d.u5B)}</td>
-      <td>${(d.u5A<100 && d.u5B<100) ? '✅ PROCEED' : '❌ STOP'}</td>
-    </tr>
-  `;
+  const phNames=['','Ph 1 — Connect Crane A','Ph 2 — Oxy Cut','Ph 3 — Travel A→B','Ph 4 — Connect Crane B','Ph 5 — Rotate & Lower'];
+  const phFactors={1:'×1.00 — static pretension',2:'×1.50 — PRO-028 §7.1.3 lift-off',3:'×1.50 — suspended travel',4:'×1.50 — Crane A all load',5:'×1.25 — lay-down rotation'};
+  sv('cvTitle',phNames[PHASE].toUpperCase()+' — '+['','CRANE A CONNECTS','CRANE A ALL LOAD','CRANE A ALL LOAD','CRANE A ALL LOAD / CRANE B ATTACHES','BOTH CRANES'][PHASE]);
+  sv('rTitle',phNames[PHASE]);
 
-  // 2. Update Live Telemetry
-  const titles=['','Phase 1: Pre-Tension','Phase 2: Oxy Cut','Phase 3: Air Travel','Phase 4: Tail Hookup (In Air)','Phase 5: Rotation Down-Ending'];
-  $('cvTitle').textContent = titles[PHASE];
+  let hl,cap,u,gbp,r;
+  if(PHASE===1){hl=d.hl1;cap=d.c1;u=d.u1;gbp=d.gbp1;r=d.rCut}
+  else if(PHASE===2){hl=d.hl2;cap=d.c1;u=d.u2;gbp=d.gbp2;r=d.rCut}
+  else if(PHASE===3){hl=d.hl3;cap=d.c3;u=d.u3;gbp=d.gbp3;r=d.rTravel}
+  else if(PHASE===4){hl=d.hl4;cap=d.c4;u=d.u4;gbp=d.gbp4;r=d.rLay}
+  else{hl=d.hlA;cap=d.c5now;u=d.u5now;gbp=d.gbp5A;r=d.rNow}
 
-  let mLoad, mUtil, mCap, mRad;
-  
-  if (PHASE === 1) { mLoad = d.W*1.0; mUtil = d.u1; mCap = d.c1; mRad = d.rCut; }
-  else if (PHASE === 2) { mLoad = d.W*1.5; mUtil = d.u2; mCap = d.c1; mRad = d.rCut; }
-  else if (PHASE === 3 || PHASE === 4) { mLoad = d.W*1.5; mUtil = d.u3; mCap = d.c3; mRad = d.rTravel; }
-  else { mLoad = d.hlA_5; mUtil = d.u5A; mCap = d.c5A; mRad = d.rTravel; }
+  setCapCard('A',hl,cap,BLK800,u,phFactors[PHASE],'At '+r.toFixed(1)+'m radius','#f97316');
+  $('capCardB').style.display=PHASE===5?'block':'none';
+  if(PHASE===5){
+    setCapCard('B',d.hlB,d.c5B,BLK400,d.u5B,'×1.25 lay-down factor','At '+d.rB.toFixed(1)+'m','#38bdf8');
+  }
 
-  $('gvA').textContent = mLoad.toFixed(1) + ' t';
-  $('gsA').textContent = 'Utilization: ' + (mUtil?Math.round(mUtil)+'%':'OOB');
-  $('gvA').className = 't-val ' + (mUtil>=100?'val-bad':'val-ok');
-  $('gRadA').textContent = mRad.toFixed(1) + ' m';
-  $('gCapA').textContent = mCap ? mCap.toFixed(1) + ' t' : 'OOB';
+  // GBP
+  const gcls=gbp>d.gbpLA?'bad':gbp>d.gbpLA*.9?'warn':'ok';
+  $('mcGBP').className='rcard '+gcls;
+  sv('mvGBP',Math.round(gbp)+' kPa');$('mvGBP').className='rv '+gcls;
+  sv('msGBP','Limit: '+d.gbpLA+' kPa');
+  // Sling
+  const scls=d.sUtilA>100?'bad':d.sUtilA>90?'warn':'ok';
+  $('mcSling').className='rcard '+scls;
+  sv('mvSling',d.tensA.toFixed(2)+' t');$('mvSling').className='rv '+scls;
+  sv('msSling',Math.round(d.sUtilA)+'% of '+d.wll+'t WLL/leg');
+  // Swing
+  const swcls=d.swingRadius>d.rTravel*1.1?'warn':'ok';
+  $('mcSwing').className='rcard '+swcls;
+  sv('mvSwing',d.swingRadius.toFixed(1)+' m');$('mvSwing').className='rv '+swcls;
+  sv('msSwing','Swing '+d.swingRad*180/Math.PI|0 +'° @ 1m/s slew');
+  // Clearance
+  const clcls=d.clearBot<d.minClear?'bad':d.clearBot<d.minClear*2?'warn':'ok';
+  $('mcClear').className='rcard '+clcls;
+  sv('mvClear',d.clearBot.toFixed(1)+' m');$('mvClear').className='rv '+clcls;
+  sv('msClear','Min: '+d.minClear+'m required');
+  // Excl
+  sv('mvExcl',d.exclR.toFixed(0)+' m radius');
 
-  if (PHASE >= 4) {
-      $('tailPanel').style.display = 'block';
-      let tLoad, tUtil, tCap = d.c5B, tRad = d.rB;
-      
-      if (PHASE === 4) {
-          // Phase 4: Connected but SLACK (0 load)
-          tLoad = 0; tUtil = 0; 
-      } else {
-          // Phase 5: Takes load instantly upon rotation
-          tLoad = d.hlB_5; tUtil = d.u5B;
-      }
-      
-      $('gvB').textContent = tLoad.toFixed(1) + ' t';
-      $('gsB').textContent = PHASE === 4 ? 'Slack (In Air)' : 'Utilization: ' + (tUtil?Math.round(tUtil)+'%':'OOB');
-      $('gvB').className = 't-val ' + (tUtil>=100?'val-bad':'val-ok');
-      $('gRadB').textContent = tRad.toFixed(1) + ' m';
-      $('gCapB').textContent = tCap ? tCap.toFixed(1) + ' t' : 'OOB';
-  } else {
-      $('tailPanel').style.display = 'none';
+  $('scrub').style.display=PHASE===5?'block':'none';
+  $('tailSection').style.display=PHASE===5?'block':'none';
+
+  if(PHASE===5){
+    const mPct=Math.round(d.tMain/d.W*100);
+    sv('mvSplit',mPct+'% / '+(100-mPct)+'%');
+    $('shareBar').style.background=`linear-gradient(90deg,var(--acc) ${mPct}%,var(--sky) ${mPct}%)`;
+    sv('shlMain','A: '+d.tMain.toFixed(1)+'t ('+mPct+'%)');
+    sv('shlTail','B: '+d.tTail.toFixed(1)+'t ('+(100-mPct)+'%)');
   }
 }
 
-// ═══════════════════════════════════════
-// CANVAS DRAWING (IN-AIR KINEMATICS)
-// ═══════════════════════════════════════
-function drawCanvas() {
-  const cv=$('cvs'), ctr=$('ctr');
-  cv.width = ctr.clientWidth;
-  cv.height = ctr.clientHeight - $('stepper').offsetHeight - $('chdr').offsetHeight - (PHASE===5?$('scrub').offsetHeight:0) - 2;
-  const ctx = cv.getContext('2d');
-  const W = cv.width, H = cv.height;
-  
-  // Background
-  ctx.fillStyle = '#060c14'; ctx.fillRect(0,0,W,H);
-  ctx.strokeStyle = '#1e293b'; ctx.lineWidth=1;
-  for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}
-  for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
-
-  // Ground
-  const gY = H - 40;
-  ctx.fillStyle = '#0f172a'; ctx.fillRect(0, gY, W, 40);
-  ctx.strokeStyle = '#334155'; ctx.lineWidth=2;
-  ctx.beginPath(); ctx.moveTo(0,gY); ctx.lineTo(W,gY); ctx.stroke();
-
-  const d = D;
-  const SC = Math.min(6.5, (gY * 0.7) / d.H); // Scale to fit column
-  
-  const mainX = W * 0.15;
-  const tailX = W * 0.85;
-  
-  // Draw Main Crane
-  ctx.fillStyle = '#f97316'; ctx.fillRect(mainX-20, gY-15, 40, 15);
-  ctx.fillRect(mainX-10, gY-30, 20, 15);
-  ctx.beginPath(); ctx.moveTo(mainX, gY-20); 
-  
-  const mRadPx = (PHASE <= 2 ? d.rCut : d.rTravel) * SC;
-  const topX = mainX + mRadPx;
-  const topY = gY - (d.H * SC) - 20; // Ensure entire column is strictly in the air
-  
-  ctx.lineTo(topX, topY - 30); ctx.lineWidth=6; ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(topX, topY-30); ctx.lineTo(topX, topY); ctx.lineWidth=2; ctx.stroke(); // Rope
-
-  // Draw Tail Crane (If Phase 4 or 5)
-  let botX = topX;
-  let botY = topY + (d.hTop - d.hBot) * SC;
-
-  if (PHASE === 5) {
-      // Phase 5: Rotation in Air around Top Pivot
-      const th = sAngle * Math.PI/180;
-      botX = topX + d.arm * SC * Math.sin(th);
-      botY = topY + d.arm * SC * Math.cos(th);
-  }
-
-  if (PHASE >= 4) {
-      ctx.fillStyle = '#38bdf8'; ctx.fillRect(tailX-15, gY-12, 30, 12);
-      ctx.fillRect(tailX-8, gY-25, 16, 13);
-      ctx.beginPath(); ctx.moveTo(tailX, gY-15);
-      ctx.lineTo(botX, botY - 30); ctx.lineWidth=5; ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(botX, botY-30); ctx.lineTo(botX, botY); ctx.lineWidth=2; ctx.stroke(); // Rope
-  }
-
-  // Draw Column (In Air)
-  ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = d.dia * SC * 2; ctx.lineCap = 'round';
-  ctx.beginPath(); ctx.moveTo(topX, topY); ctx.lineTo(botX, botY); ctx.stroke();
-  
-  // Highlight connection points
-  ctx.fillStyle = '#f97316'; ctx.beginPath(); ctx.arc(topX, topY, 6, 0, 6.28); ctx.fill();
-  if (PHASE >= 4) {
-      ctx.fillStyle = '#38bdf8'; ctx.beginPath(); ctx.arc(botX, botY, 6, 0, 6.28); ctx.fill();
-  }
-
-  // Labels
-  ctx.fillStyle = '#ffffff'; ctx.font = '14px Arial'; ctx.textAlign='center';
-  ctx.fillText("MAIN CRANE", mainX, gY+20);
-  if (PHASE >= 4) ctx.fillText("TAIL CRANE", tailX, gY+20);
-
-  // Informative annotations
-  ctx.textAlign = 'left';
-  if (PHASE === 4) {
-      ctx.fillStyle = '#38bdf8';
-      ctx.fillText("PHASE 4: VESSEL IN AIR.", 20, 30);
-      ctx.fillText("Tail crane connects to bottom lug.", 20, 50);
-      ctx.fillText("Tail load = 0t (Slack).", 20, 70);
-  } else if (PHASE === 5) {
-      ctx.fillStyle = '#f97316';
-      ctx.fillText("PHASE 5: AIR ROTATION.", 20, 30);
-      ctx.fillText("Top pivot held by Main Crane.", 20, 50);
-      ctx.fillText("Tail Crane pulls bottom UP.", 20, 70);
-  }
+// ══════════════════════════════════════════════════════
+// WIND UI
+// ══════════════════════════════════════════════════════
+function updateWindUI(){
+  const b=D.bft;
+  const ws=$('windScale');
+  ws.textContent=`Beaufort ${b.n} — ${b.d} ${b.ok?'✓':'— OPERATIONS STOP'}`;
+  ws.className='wind-badge '+(b.ok?(b.warn?'bft-warn':'bft-ok'):'bft-stop');
 }
 
-window.onload = function() {
-  recalc();
-  setPhase(4);
-  window.addEventListener('resize', drawCanvas);
+// ══════════════════════════════════════════════════════
+// QUICK FEASIBILITY CHECK
+// ══════════════════════════════════════════════════════
+function quickCheck(){
+  const d=D;
+  const vals=[d.u1,d.u2,d.u3,d.u4,d.u5A,d.u5B];
+  const hasNull=vals.some(v=>v===null);
+  const maxU=Math.max(...vals.filter(v=>v!==null));
+  const qc=$('quickCheck'),qt=$('qCheckText');
+  if(!d.bft.ok){qc.className='qchk bad';qt.textContent='⛔ Wind '+d.wind+'km/h exceeds Beaufort 4 limit — cease all operations';}
+  else if(hasNull||maxU>=100){qc.className='qchk bad';qt.textContent='⛔ Crane out-of-capacity in one or more phases — reduce load or increase boom radius'}
+  else if(maxU>=80){qc.className='qchk warn';qt.textContent='⚠ High utilization '+Math.round(maxU)+'% — verify all inputs and consider larger equipment'}
+  else{qc.className='qchk ok';qt.textContent='✓ All phases feasible — max utilization '+Math.round(maxU)+'% across Phases 1–5'}
+}
+
+// ══════════════════════════════════════════════════════
+// ALL PHASES TABLE
+// ══════════════════════════════════════════════════════
+function buildAllPhases(){
+  const d=D;
+  const rows=[
+    {n:'1 Connect A',f:'×1.00',r:d.rCut,u:d.u1,g:d.gbp1},
+    {n:'2 Oxy Cut',f:'×1.50',r:d.rCut,u:d.u2,g:d.gbp2},
+    {n:'3 Travel',f:'×1.50',r:d.rTravel,u:d.u3,g:d.gbp3},
+    {n:'4 Connect B',f:'×1.50',r:d.rLay,u:d.u4,g:d.gbp4},
+    {n:'5 Rotate 90°',f:'×1.25',r:d.rLayMax,u:Math.max(d.u5A||0,d.u5B||0),g:d.gbp5A},
+  ];
+  const maxU=Math.max(...rows.map(r=>r.u||0));
+  $('allPhaseTbody').innerHTML=rows.map((r,i)=>{
+    const isCrit=r.u!==null&&r.u===maxU;
+    const cls=r.u===null||r.u>=100?'c-bad':r.u>=80?'c-warn':'c-ok';
+    const gcls=r.g>d.gbpLA?'c-bad':r.g>d.gbpLA*.9?'c-warn':'c-ok';
+    return`<tr class="${isCrit?'crit':''}" onclick="setPhase(${i+1})">
+      <td>${r.n}</td><td class="c-mu">${r.f}</td>
+      <td>${r.r.toFixed(1)}m</td>
+      <td class="${cls}">${r.u===null?'OOB':Math.round(r.u)+'%'}</td>
+      <td class="${gcls}">${Math.round(r.g)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════
+// ROTATION TABLE
+// ══════════════════════════════════════════════════════
+function buildRotTable(){
+  const d=D;
+  const angles=[0,15,30,45,60,75,90];
+  let maxUA=0;
+  const rows=angles.map(a=>{
+    const th=a*Math.PI/180;
+    const rM=d.rLay+(d.rLayMax-d.rLay)*Math.sin(th);
+    const cM=lookupCap(CH800,SPF800,d.bA,rM,d.spA);
+    const uM=cM!==null&&cM-BLK800>0?d.hlA/(cM-BLK800)*100:null;
+    const uT=d.c5B!==null&&d.c5B-BLK400>0?d.hlB/(d.c5B-BLK400)*100:null;
+    if(uM&&uM>maxUA)maxUA=uM;
+    return{a,rM:rM.toFixed(1),cM:cM?cM.toFixed(1):'OOB',uM,uT};
+  });
+  $('rotBody').innerHTML=rows.map(r=>{
+    const isCrit=r.uM!==null&&Math.round(r.uM)===Math.round(maxUA);
+    const acls=r.uM===null||r.uM>=100?'c-bad':r.uM>=80?'c-warn':'c-ok';
+    const bcls=r.uT===null||r.uT>=100?'c-bad':r.uT>=80?'c-warn':'c-ok';
+    return`<tr ${isCrit?'class="crit"':''}>
+      <td>${r.a}°</td><td>${r.rM}</td><td>${r.cM}</td>
+      <td class="${acls}">${r.uM===null?'OOB':Math.round(r.uM)+'%'}</td>
+      <td class="${bcls}">${r.uT===null?'OOB':Math.round(r.uT)+'%'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════
+// COMPLIANCE
+// ══════════════════════════════════════════════════════
+function buildCompliance(){
+  const d=D;const C=[];
+  C.push({s:'w',t:'Complex lift — FRM-040 required'});
+  if(!d.bft.ok)C.push({s:'f',t:'WIND STOP — '+d.wind+'km/h Bft '+d.bft.n});
+  else if(d.bft.warn)C.push({s:'w',t:'Wind '+d.wind+'km/h — approaching limit'});
+  else C.push({s:'p',t:'Wind OK — Bft '+d.bft.n});
+  const ph2s=d.u2===null||d.u2>=100?'f':d.u2>=80?'w':'p';
+  C.push({s:ph2s,t:'Ph2 Crane A: '+(d.u2===null?'OOB':Math.round(d.u2)+'%')});
+  const ph3s=d.u3===null||d.u3>=100?'f':d.u3>=80?'w':'p';
+  C.push({s:ph3s,t:'Ph3 Crane A: '+(d.u3===null?'OOB':Math.round(d.u3)+'%')});
+  const ph5s=d.u5A===null||d.u5A>=100?'f':d.u5A>=80?'w':'p';
+  C.push({s:ph5s,t:'Ph5 Crane A 90°: '+(d.u5A===null?'OOB':Math.round(d.u5A)+'%')});
+  const ph5bs=d.u5B===null||d.u5B>=100?'f':d.u5B>=80?'w':'p';
+  C.push({s:ph5bs,t:'Ph5 Crane B: '+(d.u5B===null?'OOB':Math.round(d.u5B)+'%')});
+  const gbpW=Math.max(d.gbp2,d.gbp3,d.gbp5A);
+  C.push({s:gbpW>d.gbpLA?'f':gbpW>d.gbpLA*.9?'w':'p',t:'GBP: '+Math.round(gbpW)+'/'+d.gbpLA+'kPa'});
+  C.push({s:d.sUtilA>100?'f':d.sUtilA>90?'w':'p',t:'Sling: '+Math.round(d.sUtilA)+'% WLL'});
+  if(spA!=='7.3')C.push({s:'w',t:'Crane A not fully extended'});
+  if(spB!=='6.2')C.push({s:'w',t:'Crane B not fully extended'});
+  C.push({s:'w',t:'Top connection: engineer cert. required'});
+  C.push({s:'w',t:'Taglines mandatory Phase 3'});
+  $('chips').innerHTML=C.map(c=>`<div class="chip ${c.s}">${c.s==='p'?'✓':c.s==='w'?'⚠':'✗'} ${c.t}</div>`).join('');
+  const hasFail=C.some(c=>c.s==='f');
+  $('cbadge').textContent=hasFail?'ABORT — CHECK REQUIRED':'COMPLEX LIFT — FRM-040';
+  $('cbadge').className='cbadge '+(hasFail?'abt':'cpx');
+}
+
+// ══════════════════════════════════════════════════════
+// CHECKLISTS
+// ══════════════════════════════════════════════════════
+const CL={
+  1:[
+    {w:'sup',t:'Structural engineer has certified top connection method and signed lift plan'},
+    {w:'sup',t:'Exclusion zone barriers in place at '+(()=>((fv('inH')||32)*1.5).toFixed(0))()+'m radius from base'},
+    {w:'sup',t:'Wind speed confirmed below Beaufort 4 (28 km/h) — record in lift plan'},
+    {w:'sup',t:'GBP confirmed — outrigger pads correct size and ground prepared'},
+    {w:'rig',t:'Top connection / lifting lug inspected — no cracks, corrosion, or defects'},
+    {w:'rig',t:'Main sling and shackle attached to top point — pin locked, mouse wire fitted'},
+    {w:'op', t:'Take up tension very slowly — watch load indicator continuously'},
+    {w:'sup',t:'STOP if structure moves, cracks or makes unusual noise during pretension'},
+    {w:'op', t:'Confirm load indicator reads approx. '+(fv('inW')||35)+'t before proceeding to Phase 2'},
+  ],
+  2:[
+    {w:'sup',t:'All personnel clear of exclusion zone — only oxy-cutter with escape route'},
+    {w:'op', t:'Confirm load indicator at full vessel weight — do not adjust during cut'},
+    {w:'rig',t:'Leave final 2 anchor bolts — remove after crane confirms full pretension'},
+    {w:'rig',t:'Oxy-cutter makes complete separation in one controlled operation'},
+    {w:'op', t:'Watch for load spike at separation — if spike >20% above expected: HALT'},
+    {w:'sup',t:'Immediately after separation: all personnel clear of area beneath vessel'},
+    {w:'rig',t:'Attach taglines to vessel bottom — minimum 2 people, keep lines taut'},
+  ],
+  3:[
+    {w:'sup',t:'Re-confirm wind Beaufort 4 or below before travel begins'},
+    {w:'rig',t:'Taglines taut and manned — control bottom swing throughout travel'},
+    {w:'op', t:'Slew speed maximum 1.0 m/s — slow, smooth, no sudden starts or stops'},
+    {w:'sup',t:'Spotter watches vessel bottom clearance and tagline teams at all times'},
+    {w:'sup',t:'Monitor swing radius — must not exceed '+(((fv('inRtravel')||12)*1.1).toFixed(1))+'m'},
+    {w:'op', t:'Vessel bottom must clear all obstacles by minimum '+(fv('inClear')||0.5)+'m'},
+    {w:'op', t:'Come to complete stop at Point B — allow vessel to fully stabilise'},
+  ],
+  4:[
+    {w:'sup',t:'Vessel completely stationary and stabilised before Crane B approaches'},
+    {w:'op', t:'Crane B positions at correct operating radius: '+(fv('inRB')||8)+'m'},
+    {w:'rig',t:'Attach tail sling to bottom attachment point — WLL required: '+(D.hlB||5).toFixed(1)+'t'},
+    {w:'op', t:'Crane B takes up slack — load indicator shows ZERO (no load yet)'},
+    {w:'sup',t:'Both operators establish radio contact — agree signals and "halt" call word'},
+    {w:'sup',t:'Brief Phase 5 procedure — Crane B lifts bottom, Crane A maintains height'},
+    {w:'rig',t:'Remove all taglines from vessel — they will interfere with Phase 5'},
+  ],
+  5:[
+    {w:'sup',t:'Both operators confirmed ready — radio check complete'},
+    {w:'op', t:'Crane A maintains constant load '+(D.hlA||0).toFixed(1)+'t — hold height steady'},
+    {w:'op', t:'Crane B lifts bottom of vessel slowly — controls the rotation angle'},
+    {w:'sup',t:'Monitor Crane A radius — must not exceed '+(fv('inRlayMax')||13)+'m'},
+    {w:'sup',t:'Load on each crane is CONSTANT: A = '+(D.tMain||0).toFixed(1)+'t, B = '+(D.tTail||0).toFixed(1)+'t throughout'},
+    {w:'rig',t:'Personnel clear of lay-down zone — vessel bottom may have lateral movement'},
+    {w:'op', t:'Lower vessel onto sleepers gently — minimum 3 support points under vessel'},
+    {w:'rig',t:'Do NOT release rigging until vessel fully secured and confirmed cannot roll'},
+    {w:'sup',t:'Sign off Phase 5 complete — record all actual loads and deviations from plan'},
+  ]
 };
 
+function buildChecklist(){
+  const items=CL[PHASE]||[];
+  $('checklist').innerHTML=items.map((item,i)=>{
+    const key=`P${PHASE}_${i}`,done=chkState[key];
+    return`<div class="cki ${done?'done':''}" onclick="toggleCk('${key}',this)">
+      <div class="cki-chk">${done?'✓':''}</div>
+      <span class="who ${item.w}">${item.w.toUpperCase()}</span>
+      <div class="cki-txt">${item.t}</div>
+    </div>`;
+  }).join('');
+}
+function toggleCk(key,el){
+  chkState[key]=!chkState[key];
+  el.classList.toggle('done',chkState[key]);
+  el.querySelector('.cki-chk').textContent=chkState[key]?'✓':'';
+}
+
+// ══════════════════════════════════════════════════════
+// CANVAS DRAWING — PROPERLY SCALED
+// ══════════════════════════════════════════════════════
+function drawCanvas(){
+  const cv=$('cvs'),ctr=$('ctr');
+  const res=$('stepper').offsetHeight+$('chdr').offsetHeight+$('cstrip').offsetHeight+(PHASE===5?$('scrub').offsetHeight:0)+4;
+  cv.width=ctr.clientWidth;
+  cv.height=Math.max(200,ctr.clientHeight-res);
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height;
+  const dk=document.documentElement.dataset.theme==='dark';
+  // Background
+  ctx.fillStyle=dk?'#030c18':'#e4edf8';ctx.fillRect(0,0,W,H);
+  // Grid
+  ctx.strokeStyle=dk?'rgba(22,40,60,.5)':'rgba(140,180,210,.3)';ctx.lineWidth=1;
+  for(let x=0;x<W;x+=50){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}
+  for(let y=0;y<H;y+=50){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+  const gY=H-56;
+  drawGround(ctx,W,gY,dk);
+  if(VIEW==='plan'){drawPlan(ctx,W,H,dk);return;}
+  if(PHASE<=2)drawPh12(ctx,W,H,gY,dk);
+  else if(PHASE===3)drawPh3(ctx,W,H,gY,dk);
+  else if(PHASE===4)drawPh4(ctx,W,H,gY,dk);
+  else drawPh5(ctx,W,H,gY,dk);
+}
+
+function drawGround(ctx,W,gY,dk){
+  const g=ctx.createLinearGradient(0,gY,0,gY+56);
+  g.addColorStop(0,dk?'#091624':'#c0d0e0');g.addColorStop(1,dk?'#040c14':'#a0b4c4');
+  ctx.fillStyle=g;ctx.fillRect(0,gY,W,56);
+  ctx.strokeStyle=dk?'#1a3050':'#7aaabb';ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.moveTo(0,gY);ctx.lineTo(W,gY);ctx.stroke();
+  // Hatching
+  ctx.strokeStyle=dk?'rgba(22,44,70,.6)':'rgba(120,160,180,.4)';ctx.lineWidth=1;
+  for(let x=-30;x<W+30;x+=22){ctx.beginPath();ctx.moveTo(x,gY);ctx.lineTo(x+18,gY+18);ctx.stroke()}
+}
+
+// Compute scene scale that fits crane + hanging structure in available canvas height
+function sceneScale(boomLen,radius,hangLen,gY){
+  const pinH=3.8, boomH=Math.sqrt(Math.max(0,boomLen*boomLen-radius*radius));
+  const totalM=pinH+boomH+hangLen;
+  return Math.min(8, gY*0.87/totalM);
+}
+
+// Draw realistic RT crane — SC is pixels per metre
+function drawCrane(ctx,cx,gY,radius,boomLen,SC,color,label,dk,small=false){
+  const pinH=small?2.8:3.8;
+  const pinY=gY-pinH*SC;
+  const boomH=Math.sqrt(Math.max(0,boomLen*boomLen-radius*radius));
+  const tipX=cx+radius*SC, tipY=pinY-boomH*SC;
+  const boomAng=Math.atan2(boomH,radius); // angle from horizontal
+
+  // Outrigger pads
+  const sp=parseFloat(small?spB:spA)/2*SC;
+  const padW=small?14:20,padH=9;
+  [-sp,sp].forEach(ox=>{
+    const px=cx+ox;
+    // Beam
+    ctx.fillStyle=dk?'#162030':'#a0b0c0';ctx.fillRect(px-padW/2,gY-3,padW,3);
+    // Pad
+    const pg=ctx.createLinearGradient(px-padW/2,gY,px+padW/2,gY+padH);
+    pg.addColorStop(0,color+'55');pg.addColorStop(1,color+'18');
+    ctx.fillStyle=pg;ctx.strokeStyle=color+'66';ctx.lineWidth=1;
+    ctx.beginPath();ctx.rect(px-padW/2,gY,padW,padH);ctx.fill();ctx.stroke();
+    // Pressure dot
+    ctx.beginPath();ctx.arc(px,gY+padH/2,2.5,0,6.28);ctx.fillStyle=color+'aa';ctx.fill();
+  });
+  // Outrigger beam
+  ctx.strokeStyle=dk?'#1e3050':'#7090a8';ctx.lineWidth=small?3:4.5;
+  ctx.beginPath();ctx.moveTo(cx-sp,gY);ctx.lineTo(cx+sp,gY);ctx.stroke();
+
+  // Carrier / truck body
+  const bw=small?16:22,bh=small?8:11;
+  const cg=ctx.createLinearGradient(cx-bw,gY-bh,cx+bw,gY);
+  cg.addColorStop(0,dk?'#1c2a3c':'#c0d0e0');cg.addColorStop(1,dk?'#141e2c':'#a8bccc');
+  ctx.fillStyle=cg;ctx.beginPath();ctx.roundRect(cx-bw,gY-bh,bw*2,bh,2);ctx.fill();
+  ctx.strokeStyle=dk?'#22324a':'#8090a0';ctx.lineWidth=1;
+  ctx.beginPath();ctx.roundRect(cx-bw,gY-bh,bw*2,bh,2);ctx.stroke();
+  // Wheels
+  [-bw*.55,bw*.55].forEach(wx=>{
+    ctx.beginPath();ctx.arc(cx+wx,gY-bh/2,bh/2-.5,0,6.28);
+    ctx.fillStyle=dk?'#0c1622':'#7080a0';ctx.strokeStyle=dk?'#22304a':'#6080a0';ctx.lineWidth=.8;ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.arc(cx+wx,gY-bh/2,bh/4,0,6.28);ctx.fillStyle=dk?'#162238':'#a0b0c0';ctx.fill();
+  });
+
+  // Superstructure (rotating body)
+  const sbH=small?pinH*SC*.52:pinH*SC*.55;
+  const sbw=bw*.82;
+  const sg=ctx.createLinearGradient(cx-sbw,gY-bh-sbH,cx+sbw,gY-bh);
+  sg.addColorStop(0,dk?'#1e3048':'#c8d8e8');sg.addColorStop(1,dk?'#18263a':'#b0c4d4');
+  ctx.fillStyle=sg;ctx.beginPath();ctx.roundRect(cx-sbw,gY-bh-sbH,sbw*2,sbH,2);ctx.fill();
+  ctx.strokeStyle=dk?'#2a3e58':'#8898a8';ctx.lineWidth=1;ctx.stroke();
+
+  // Cab
+  const cabW=small?9:12,cabH=small?9:13;
+  const cabX=cx+sbw*.05,cabY=gY-bh-sbH-cabH;
+  ctx.fillStyle=dk?'#223344':'#c4d4e2';
+  ctx.beginPath();ctx.roundRect(cabX,cabY,cabW,cabH,2);ctx.fill();
+  ctx.strokeStyle=dk?'#3a5060':'#8aacbc';ctx.lineWidth=1;ctx.stroke();
+  // Window
+  ctx.fillStyle=dk?'rgba(56,189,248,.18)':'rgba(56,189,248,.22)';
+  ctx.strokeStyle=dk?'rgba(56,189,248,.45)':'rgba(56,189,248,.55)';ctx.lineWidth=.7;
+  ctx.beginPath();ctx.roundRect(cabX+2,cabY+2,cabW-4,cabH-5,1);ctx.fill();ctx.stroke();
+
+  // Counterweight
+  const cwW=small?8:12,cwH=small?7:9;
+  ctx.fillStyle=dk?'#1c1c2a':'#909090';
+  ctx.fillRect(cx-sbw-cwW*.4,gY-bh-sbH*.35-cwH,cwW,cwH);
+  ctx.strokeStyle=dk?'#303040':'#707070';ctx.lineWidth=.7;
+  ctx.strokeRect(cx-sbw-cwW*.4,gY-bh-sbH*.35-cwH,cwW,cwH);
+  ctx.fillStyle=dk?'#484858':'#888888';ctx.font='bold 5px Arial';ctx.textAlign='center';
+  ctx.fillText('CW',cx-sbw-cwW*.4+cwW/2,gY-bh-sbH*.35-cwH/2+2);
+
+  // Slewing ring
+  ctx.beginPath();ctx.arc(cx,gY-bh-sbH*.05,3.5,0,6.28);
+  ctx.fillStyle=dk?'#182838':'#b0c0d0';ctx.strokeStyle=color+'55';ctx.lineWidth=1;ctx.fill();ctx.stroke();
+
+  // BOOM — 3 telescoping sections with gradient
+  const nSeg=3;
+  for(let s=0;s<nSeg;s++){
+    const t0=s/nSeg,t1=(s+1)/nSeg;
+    const x0=cx+radius*SC*t0, y0=pinY-boomH*SC*t0;
+    const x1=cx+radius*SC*t1, y1=pinY-boomH*SC*t1;
+    const w=small?(5-s*.7):(7.5-s*1.2);
+    // Perp direction to boom
+    const dx=-(y1-y0)/Math.sqrt((x1-x0)**2+(y1-y0)**2)*w/2;
+    const dy=(x1-x0)/Math.sqrt((x1-x0)**2+(y1-y0)**2)*w/2;
+    const w2=w*.62;
+    const dx2=dx*w2/w,dy2=dy*w2/w;
+    ctx.beginPath();
+    ctx.moveTo(x0-dx,y0-dy);ctx.lineTo(x0+dx,y0+dy);
+    ctx.lineTo(x1+dx2,y1+dy2);ctx.lineTo(x1-dx2,y1-dy2);ctx.closePath();
+    ctx.fillStyle=s===0?color+'cc':s===1?color+'99':color+'77';ctx.fill();
+    // Section ring
+    ctx.beginPath();ctx.arc(x1,y1,small?2.2:2.8,0,6.28);
+    ctx.fillStyle=dk?'#182838':'#d0dce8';ctx.strokeStyle=color;ctx.lineWidth=1;ctx.fill();ctx.stroke();
+  }
+  // Boom head sheave
+  ctx.beginPath();ctx.arc(tipX,tipY,small?4:5.5,0,6.28);
+  ctx.fillStyle=dk?'#1c3040':'#c0d0e0';ctx.strokeStyle=color;ctx.lineWidth=2;ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.arc(tipX,tipY,small?2:2.5,0,6.28);ctx.fillStyle=color+'88';ctx.fill();
+
+  // Boom angle arc annotation
+  const arcR=30;
+  ctx.beginPath();ctx.arc(cx,pinY,arcR,-(Math.PI/2+.05),-boomAng+.05,true);
+  ctx.strokeStyle=color+'40';ctx.lineWidth=1.5;ctx.setLineDash([2,3]);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle=color+'88';ctx.font=`bold ${small?8:9}px JetBrains Mono,monospace`;ctx.textAlign='center';
+  ctx.fillText(Math.round(boomAng*180/Math.PI)+'°',cx+arcR+8,pinY-14);
+
+  // Labels
+  ctx.fillStyle=color;ctx.font=`bold ${small?9:11}px Barlow Condensed,sans-serif`;ctx.textAlign='center';
+  ctx.fillText(label,cx,gY+36);
+  ctx.fillStyle=dk?color+'99':color+'cc';ctx.font=`${small?8:9}px Inter,sans-serif`;
+  ctx.fillText(small?'GR-400EX (40t)':'GR-800EX (80t)',cx,gY+50);
+
+  return{tipX,tipY,pinY};
+}
+
+// Draw vessel (cylindrical column with details)
+function drawVessel(ctx,bX,bY,tX,tY,dia,SC,dk){
+  const ang=Math.atan2(tX-bX,bY-tY);
+  const w=Math.max(12,dia*SC*.52);
+  const dx=Math.sin(ang+Math.PI/2)*w/2, dy=Math.cos(ang+Math.PI/2)*w/2;
+
+  // Shell with gradient
+  ctx.beginPath();ctx.moveTo(bX-dx,bY-dy);ctx.lineTo(bX+dx,bY+dy);
+  ctx.lineTo(tX+dx,tY+dy);ctx.lineTo(tX-dx,tY-dy);ctx.closePath();
+  const sg=ctx.createLinearGradient(bX-dx,bY,bX+dx,bY);
+  sg.addColorStop(0,dk?'#16344e':'#98b8cc');sg.addColorStop(.3,dk?'#244a6c':'#b8d0e4');
+  sg.addColorStop(.7,dk?'#1e4060':'#a8c4d8');sg.addColorStop(1,dk?'#122a40':'#88a8bc');
+  ctx.fillStyle=sg;ctx.fill();
+  ctx.strokeStyle=dk?'#348ab8':'#4878a0';ctx.lineWidth=1.8;ctx.stroke();
+
+  // Stiffener rings
+  const len=Math.sqrt((tX-bX)**2+(tY-bY)**2)/SC;
+  const nR=Math.max(3,Math.floor(len/4.5));
+  for(let i=1;i<nR;i++){
+    const f=i/nR;
+    const rx=bX+(tX-bX)*f,ry=bY+(tY-bY)*f;
+    ctx.beginPath();ctx.moveTo(rx-dx*1.1,ry-dy*1.1);ctx.lineTo(rx+dx*1.1,ry+dy*1.1);
+    ctx.strokeStyle=dk?'rgba(52,138,184,.7)':'rgba(60,110,150,.45)';ctx.lineWidth=3;ctx.stroke();
+  }
+
+  // Top head (ellipse)
+  ctx.beginPath();ctx.ellipse(tX,tY,w/2,w/6,ang,0,Math.PI*2);
+  const hg=ctx.createLinearGradient(tX-dx,tY,tX+dx,tY);
+  hg.addColorStop(0,dk?'#244a6c':'#b8d0e4');hg.addColorStop(1,dk?'#16344e':'#98b8cc');
+  ctx.fillStyle=hg;ctx.fill();ctx.strokeStyle=dk?'#348ab8':'#4878a0';ctx.lineWidth=1.8;ctx.stroke();
+
+  // Nozzles (2)
+  [[.3,1],[.65,-1]].forEach(([f,side])=>{
+    const nx=bX+(tX-bX)*f,ny=bY+(tY-bY)*f;
+    const nl=w*.35;
+    ctx.beginPath();ctx.moveTo(nx+side*dx*.95,ny+side*dy*.95);ctx.lineTo(nx+side*dx*1.4,ny+side*dy*1.4);
+    ctx.strokeStyle=dk?'#3a7898':'#5888a8';ctx.lineWidth=3.5;ctx.lineCap='round';ctx.stroke();ctx.lineCap='butt';
+    ctx.beginPath();ctx.arc(nx+side*dx*1.42,ny+side*dy*1.42,3,0,6.28);ctx.fillStyle=dk?'#2a6080':'#5888a8';ctx.fill();
+  });
+}
+
+// Hook block with load label
+function drawHook(ctx,x,y,load,util,color,dk){
+  const bw=44,bh=21;
+  const bg=ctx.createLinearGradient(x-bw/2,y,x,y+bh);
+  bg.addColorStop(0,dk?'#1a2e48':'#c0d0e4');bg.addColorStop(1,dk?'#0e1e30':'#a8bcd0');
+  ctx.fillStyle=bg;ctx.strokeStyle=color;ctx.lineWidth=2;
+  ctx.beginPath();ctx.roundRect(x-bw/2,y,bw,bh,3);ctx.fill();ctx.stroke();
+  // Sheave
+  ctx.beginPath();ctx.arc(x,y+6,4,0,6.28);ctx.fillStyle=dk?'#22384a':'#d0dce8';ctx.strokeStyle=color+'66';ctx.lineWidth=1;ctx.fill();ctx.stroke();
+  // Hook
+  ctx.beginPath();ctx.moveTo(x,y+10);ctx.lineTo(x,y+bh+7);ctx.arc(x+3,y+bh+7,3,Math.PI,Math.PI*1.6);
+  ctx.strokeStyle=dk?'#8aaac0':'#6080a0';ctx.lineWidth=2;ctx.stroke();
+  // Load text
+  ctx.fillStyle=color;ctx.font='bold 10px JetBrains Mono,monospace';ctx.textAlign='center';
+  ctx.fillText(load.toFixed(1)+'t',x,y+15);
+  // Util bar
+  if(util!==null){
+    const uw=(bw-4)*Math.min(util/100,1);
+    ctx.fillStyle=pCol(util)+'44';ctx.fillRect(x-bw/2+2,y+bh-4,bw-4,3.5);
+    ctx.fillStyle=pCol(util);ctx.fillRect(x-bw/2+2,y+bh-4,uw,3.5);
+  }
+}
+
+// Info box annotation
+function box(ctx,x,y,lines,color,dk){
+  ctx.font='8.5px Barlow Condensed,sans-serif';
+  const maxW=Math.max(...lines.map(l=>ctx.measureText(l).width));
+  const lh=15,pad=9,bw=maxW+pad*2,bh=lines.length*lh+pad*1.5;
+  ctx.fillStyle=dk?'rgba(4,10,22,.88)':'rgba(236,248,255,.93)';
+  ctx.strokeStyle=color+'66';ctx.lineWidth=1.2;
+  ctx.beginPath();ctx.roundRect(x,y,bw,bh,4);ctx.fill();ctx.stroke();
+  lines.forEach((l,i)=>{
+    const isH=i===0;
+    ctx.fillStyle=isH?color:(dk?'#b0c8e0':'#1a2c3e');
+    ctx.font=(isH?'bold ':'')+`${isH?9:8.5}px Barlow Condensed,sans-serif`;
+    ctx.textAlign='left';ctx.fillText(l,x+pad,y+pad+i*lh+9);
+  });
+}
+
+function drawRadLine(ctx,cx,gY,tipX,label,dk){
+  ctx.strokeStyle=dk?'rgba(30,50,80,.5)':'rgba(100,140,170,.4)';ctx.lineWidth=1;
+  ctx.setLineDash([2,4]);ctx.beginPath();ctx.moveTo(cx,gY+20);ctx.lineTo(tipX,gY+20);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle=dk?'#3a5870':'#5878a0';ctx.font='bold 9px JetBrains Mono,monospace';ctx.textAlign='center';
+  ctx.fillText(label,cx+(tipX-cx)/2,gY+34);
+}
+
+function drawExcl(ctx,cx,gY,rPx,dk){
+  ctx.beginPath();ctx.arc(cx,gY,rPx,Math.PI,0,false);
+  ctx.strokeStyle='rgba(239,68,68,.6)';ctx.lineWidth=2;ctx.setLineDash([8,5]);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='rgba(239,68,68,.05)';
+  ctx.beginPath();ctx.arc(cx,gY,rPx,Math.PI,0);ctx.lineTo(cx+rPx,gY);ctx.lineTo(cx-rPx,gY);ctx.closePath();ctx.fill();
+  ctx.fillStyle='rgba(239,68,68,.75)';ctx.font='bold 9px Barlow Condensed,sans-serif';ctx.textAlign='center';
+  ctx.fillText('EXCLUSION ZONE '+rPx.toFixed(0)+'m',cx,gY-rPx+14);
+}
+
+// PHASE DRAWINGS
+function drawPh12(ctx,W,H,gY,dk){
+  const d=D,SC=sceneScale(parseFloat(d.bA),d.rCut,d.H,gY);
+  const craneCx=W*.18,colCx=W*.48;
+  const {tipX,tipY}=drawCrane(ctx,craneCx,gY,d.rCut,parseFloat(d.bA),SC,'#f97316','Crane A',dk);
+
+  if(showZone)drawExcl(ctx,colCx,gY,d.exclR*SC,dk);
+
+  // Column standing on foundation
+  drawVessel(ctx,colCx,gY,colCx,gY-d.H*SC,d.dia,SC,dk);
+
+  // Foundation base
+  const fw=28;
+  ctx.fillStyle=dk?'#0a1828':'#b0c4d4';ctx.fillRect(colCx-fw,gY,fw*2,13);
+  ctx.strokeStyle=dk?'#1a3048':'#7090a8';ctx.lineWidth=1.5;ctx.strokeRect(colCx-fw,gY,fw*2,13);
+
+  // Anchor bolts — red if cutting, orange if pretension
+  const bColor=PHASE===2?'#ef4444':'#f97316';
+  const nBolts=6;
+  for(let i=0;i<nBolts;i++){
+    const bx=colCx-fw+fw/nBolts*(i*2+1);
+    ctx.beginPath();ctx.arc(bx,gY+6,3.5,0,6.28);ctx.fillStyle=bColor;ctx.fill();
+    if(PHASE===2){// cutting sparks
+      ctx.strokeStyle='#fbbf24';ctx.lineWidth=1;
+      for(let s=0;s<4;s++){const a=s*Math.PI/2;ctx.beginPath();ctx.moveTo(bx,gY+6);ctx.lineTo(bx+Math.cos(a)*6,gY+6+Math.sin(a)*6);ctx.stroke()}
+    }
+  }
+  ctx.fillStyle=PHASE===2?'#ef4444':'#f97316';ctx.font='bold 9px Barlow Condensed,sans-serif';ctx.textAlign='center';
+  ctx.fillText(PHASE===1?'BOLTED TO FOUNDATION':'OXY CUTTING BASE…',colCx,gY+28);
+
+  // Top attachment point marker
+  const haY=gY-d.hTop*SC;
+  ctx.beginPath();ctx.arc(colCx,haY,9,0,6.28);ctx.fillStyle='rgba(249,115,22,.2)';ctx.strokeStyle='#f97316';ctx.lineWidth=2.5;ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.arc(colCx,haY,4,0,6.28);ctx.fillStyle='#f97316';ctx.fill();
+  ctx.fillStyle='#f97316';ctx.font='bold 8px Barlow Condensed,sans-serif';ctx.textAlign='left';ctx.fillText('TOP ATTACH',colCx+12,haY+3);
+
+  // Slings with catenary shape
+  const sLen=d.slingLen*SC,ang=d.angDeg*Math.PI/180;
+  [-1,1].forEach(s=>{
+    const sx=colCx+s*Math.sin(ang)*sLen,sy=haY+Math.cos(ang)*sLen;
+    ctx.beginPath();ctx.moveTo(colCx,haY);
+    ctx.quadraticCurveTo(colCx+s*sLen*.25,haY+sLen*.55,sx,sy);
+    ctx.strokeStyle='#f97316cc';ctx.lineWidth=2.5;ctx.stroke();
+  });
+
+  // Rope from boom tip to apex
+  ctx.beginPath();ctx.moveTo(tipX,tipY);ctx.lineTo(colCx,haY);
+  ctx.strokeStyle='#f97316';ctx.lineWidth=2;ctx.setLineDash([5,3]);ctx.stroke();ctx.setLineDash([]);
+
+  // Hook block
+  drawHook(ctx,colCx+4,haY-32,PHASE===1?d.hl1:d.hl2,PHASE===1?d.u1:d.u2,'#f97316',dk);
+
+  drawRadLine(ctx,craneCx,gY,tipX,d.rCut.toFixed(1)+'m — cut radius',dk);
+  box(ctx,W*.6,20,PHASE===1?['PHASE 1 — PRETENSION','Crane A connects top','Take up tension slowly','Confirm load = '+d.W.toFixed(1)+'t','Any movement = STOP']:['PHASE 2 — OXY CUT','×1.5 PRO-028 §7.1.3','Personnel clear of zone','Oxy-cutter at base','Crane A all load at separation'],'#f97316',dk);
+}
+
+function drawPh3(ctx,W,H,gY,dk){
+  const d=D;
+  // Scale must fit: crane + hanging vessel
+  const SC=sceneScale(parseFloat(d.bA),d.rTravel,d.hTop,gY);
+  const craneCx=W*.2;
+  const {tipX,tipY}=drawCrane(ctx,craneCx,gY,d.rTravel,parseFloat(d.bA),SC,'#f97316','Crane A',dk);
+
+  // Exclusion zone centred on hanging vessel base
+  if(showZone)drawExcl(ctx,tipX,gY,d.exclR*SC*.35,dk);
+
+  // Hanging vessel — from tipY down hTop*SC
+  const hangBotY=tipY+d.hTop*SC; // bottom of top section (at top attachment point)
+  // The vessel hangs with top attach at tipY, whole vessel below
+  const vesTopY=tipY; // top of vessel (above top attachment)
+  const vesBotY=tipY+(d.H*SC); // bottom of vessel (including below bottom attach)
+  drawVessel(ctx,tipX,vesBotY,tipX,vesTopY,d.dia,SC,dk);
+
+  // Vertical rope from boom tip to top of vessel
+  ctx.beginPath();ctx.moveTo(tipX,tipY-1);ctx.lineTo(tipX,tipY+3);
+  ctx.strokeStyle=dk?'#6090a8':'#7090a8';ctx.lineWidth=2.5;ctx.stroke();
+
+  // Hook block — to the side of vessel
+  const vesW=Math.max(12,d.dia*SC*.52);
+  drawHook(ctx,tipX+vesW+10,tipY+2,d.hl3,d.u3,'#f97316',dk);
+
+  // TAGLINES — attached to bottom of vessel, going outward to ground workers
+  const tagBotY=vesBotY;
+  [[-1,1],[1,-1]].forEach(([sign,ang])=>{
+    const tEndX=tipX+sign*90, tEndY=tagBotY+25;
+    ctx.beginPath();ctx.moveTo(tipX,tagBotY);ctx.lineTo(tEndX,tEndY);
+    ctx.strokeStyle='#eab308';ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.stroke();ctx.setLineDash([]);
+
+    // WORKER — at the END of the tagline on the GROUND
+    const wX=tEndX,wY=gY;
+    // Hard hat
+    ctx.beginPath();ctx.arc(wX,wY-24,5,Math.PI,0,false);ctx.fillStyle='#f59e0b';ctx.fill();
+    ctx.beginPath();ctx.arc(wX,wY-22,5.5,0,6.28);ctx.fillStyle='#fbbf24';ctx.fill();
+    // Body
+    ctx.beginPath();ctx.moveTo(wX,wY-17);ctx.lineTo(wX,wY-6);
+    ctx.strokeStyle='#fbbf24';ctx.lineWidth=2.5;ctx.stroke();
+    // Arms holding tagline
+    ctx.beginPath();ctx.moveTo(wX-6,wY-13);ctx.lineTo(wX+6,wY-13);ctx.stroke();
+    // Legs
+    ctx.beginPath();ctx.moveTo(wX,wY-6);ctx.lineTo(wX-4,wY);ctx.moveTo(wX,wY-6);ctx.lineTo(wX+4,wY);ctx.stroke();
+    // Hi-vis vest
+    ctx.beginPath();ctx.arc(wX,wY-12,3,0,6.28);ctx.fillStyle='rgba(251,191,36,.3)';ctx.fill();
+  });
+  ctx.fillStyle='#92400e';ctx.font='bold 9px Barlow Condensed,sans-serif';ctx.textAlign='center';
+  ctx.fillText('TAGLINES — 2 WORKERS — MANDATORY',tipX,gY+42);
+
+  // Swing arc
+  const swR=d.swingRadius*SC*.7;
+  ctx.beginPath();ctx.arc(craneCx,gY,swR,-(Math.PI/2+.5),-(Math.PI/2-.5));
+  ctx.strokeStyle='rgba(234,179,8,.65)';ctx.lineWidth=1.8;ctx.setLineDash([4,3]);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='rgba(234,179,8,.8)';ctx.font='bold 8px JetBrains Mono,monospace';ctx.textAlign='center';
+  ctx.fillText('swing: '+d.swingRadius.toFixed(1)+'m',craneCx,gY-swR-6);
+
+  // Travel arrow
+  ctx.beginPath();ctx.moveTo(craneCx+26,gY-20);ctx.lineTo(craneCx+80,gY-20);
+  ctx.strokeStyle='#22c55e';ctx.lineWidth=2.5;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(craneCx+80,gY-20);ctx.lineTo(craneCx+68,gY-28);ctx.lineTo(craneCx+68,gY-12);ctx.closePath();
+  ctx.fillStyle='#22c55e';ctx.fill();
+  ctx.fillStyle='#22c55e';ctx.font='bold 9px Barlow Condensed,sans-serif';ctx.textAlign='center';ctx.fillText('TRAVELLING TO POINT B',craneCx+50,gY-32);
+
+  drawRadLine(ctx,craneCx,gY,tipX,d.rTravel.toFixed(1)+'m — max travel radius',dk);
+  box(ctx,W*.58,20,['PHASE 3 — TRAVEL','Crane A carries full load','×1.5 factor throughout','Slew: max 1.0 m/s','Bottom of vessel: '+vesBotY.toFixed(0)>gY?'WARNING clearance':'clear of obstacles'],'#38bdf8',dk);
+}
+
+function drawPh4(ctx,W,H,gY,dk){
+  const d=D;
+  const SC=sceneScale(parseFloat(d.bA),d.rLay,d.hTop,gY);
+  const mainCx=W*.2,tailCx=W*.78;
+  const {tipX,tipY}=drawCrane(ctx,mainCx,gY,d.rLay,parseFloat(d.bA),SC,'#f97316','Crane A',dk);
+
+  // Tail crane on the right — boom faces LEFT (negative radius direction)
+  const bB_n=parseFloat(d.bB),rB=d.rB;
+  const bBH=Math.sqrt(Math.max(0,bB_n*bB_n-rB*rB));
+  const SCb=Math.min(SC,6);
+  const tailTipX=tailCx-rB*SCb,tailTipY=gY-2.8*SCb-bBH*SCb;
+  // Draw tail crane mirrored
+  drawCraneMirror(ctx,tailCx,gY,rB,bB_n,SCb,'#38bdf8','Crane B',dk);
+
+  // Hanging vessel
+  const vesTopY=tipY,vesBotY=tipY+d.H*SC;
+  drawVessel(ctx,tipX,vesBotY,tipX,vesTopY,d.dia,SC,dk);
+
+  // Rope - Crane A to top
+  ctx.beginPath();ctx.moveTo(tipX,tipY);ctx.lineTo(tipX,tipY+3);
+  ctx.strokeStyle='#7090a8';ctx.lineWidth=2.5;ctx.stroke();
+
+  // Hook block - Crane A
+  const vesW=Math.max(12,d.dia*SC*.52);
+  drawHook(ctx,tipX+vesW+10,tipY+2,d.hl4,d.u4,'#f97316',dk);
+
+  // Bottom attachment marker
+  const botAttY=tipY+d.hBot*SC;
+  ctx.beginPath();ctx.arc(tipX,botAttY,11,0,6.28);
+  ctx.fillStyle='rgba(56,189,248,.18)';ctx.strokeStyle='#38bdf8';ctx.lineWidth=2.5;ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.arc(tipX,botAttY,4.5,0,6.28);ctx.fillStyle='#38bdf8';ctx.fill();
+  ctx.fillStyle='#38bdf8';ctx.font='bold 8px Barlow Condensed,sans-serif';ctx.textAlign='right';ctx.fillText('BOTTOM ATTACH',tipX-14,botAttY+3);
+
+  // Crane B rope connecting to bottom
+  ctx.beginPath();ctx.moveTo(tailTipX,tailTipY);ctx.lineTo(tipX,botAttY);
+  ctx.strokeStyle='#38bdf8';ctx.lineWidth=2.5;ctx.setLineDash([6,4]);ctx.stroke();ctx.setLineDash([]);
+
+  // Note: load = 0 on Crane B right now
+  drawHook(ctx,tailTipX-12,tailTipY+4,0,0,'#38bdf8',dk);
+  ctx.fillStyle='#38bdf8';ctx.font='bold 9px Barlow Condensed,sans-serif';ctx.textAlign='center';
+  ctx.fillText('CONNECTING — LOAD = 0',tailCx,gY+36);
+
+  box(ctx,W*.35,20,['PHASE 4 — CRANE B CONNECTS','Vessel stationary at Point B','Crane A still holds ALL load: '+d.hl4.toFixed(1)+'t','Crane B sling to bottom attach','Crane B load indicator = ZERO','Remove all taglines'],'#38bdf8',dk);
+}
+
+function drawCraneMirror(ctx,cx,gY,radius,boomLen,SC,color,label,dk){
+  // Mirror of drawCrane — boom goes LEFT
+  const pinH=2.8,pinY=gY-pinH*SC;
+  const boomH=Math.sqrt(Math.max(0,boomLen*boomLen-radius*radius));
+  const tipX=cx-radius*SC,tipY=pinY-boomH*SC;
+  const boomAng=Math.atan2(boomH,radius);
+
+  // Outriggers (mirrored)
+  const sp=parseFloat(spB)/2*SC,padW=14,padH=8;
+  [-sp,sp].forEach(ox=>{
+    const px=cx+ox;
+    ctx.fillStyle=dk?'#162030':'#a0b0c0';ctx.fillRect(px-padW/2,gY-3,padW,3);
+    const pg=ctx.createLinearGradient(px-padW/2,gY,px+padW/2,gY+padH);
+    pg.addColorStop(0,color+'55');pg.addColorStop(1,color+'18');
+    ctx.fillStyle=pg;ctx.strokeStyle=color+'66';ctx.lineWidth=1;
+    ctx.beginPath();ctx.rect(px-padW/2,gY,padW,padH);ctx.fill();ctx.stroke();
+  });
+  ctx.strokeStyle=dk?'#1e3050':'#7090a8';ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(cx-sp,gY);ctx.lineTo(cx+sp,gY);ctx.stroke();
+
+  const bw=16,bh=8;
+  const cg=ctx.createLinearGradient(cx-bw,gY-bh,cx+bw,gY);
+  cg.addColorStop(0,dk?'#1c2a3c':'#c0d0e0');cg.addColorStop(1,dk?'#141e2c':'#a8bccc');
+  ctx.fillStyle=cg;ctx.beginPath();ctx.roundRect(cx-bw,gY-bh,bw*2,bh,2);ctx.fill();
+  ctx.strokeStyle=dk?'#22324a':'#8090a0';ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(cx-bw,gY-bh,bw*2,bh,2);ctx.stroke();
+
+  const sbH=pinH*SC*.52,sbw=bw*.82;
+  const sg=ctx.createLinearGradient(cx-sbw,gY-bh-sbH,cx+sbw,gY-bh);
+  sg.addColorStop(0,dk?'#1e3048':'#c8d8e8');sg.addColorStop(1,dk?'#18263a':'#b0c4d4');
+  ctx.fillStyle=sg;ctx.beginPath();ctx.roundRect(cx-sbw,gY-bh-sbH,sbw*2,sbH,2);ctx.fill();
+  ctx.strokeStyle=dk?'#2a3e58':'#8898a8';ctx.lineWidth=1;ctx.stroke();
+
+  // Cab (LEFT side for mirrored)
+  const cabW=9,cabH=9,cabX=cx-sbw*.9,cabY=gY-bh-sbH-cabH;
+  ctx.fillStyle=dk?'#223344':'#c4d4e2';
+  ctx.beginPath();ctx.roundRect(cabX,cabY,cabW,cabH,2);ctx.fill();
+  ctx.strokeStyle=dk?'#3a5060':'#8aacbc';ctx.lineWidth=1;ctx.stroke();
+  ctx.fillStyle=dk?'rgba(56,189,248,.18)':'rgba(56,189,248,.22)';
+  ctx.beginPath();ctx.roundRect(cabX+2,cabY+2,cabW-4,cabH-5,1);ctx.fill();
+
+  // CW right side for mirrored
+  const cwW=8,cwH=7;
+  ctx.fillStyle=dk?'#1c1c2a':'#909090';ctx.fillRect(cx+sbw-.6,gY-bh-sbH*.35-cwH,cwW,cwH);
+  ctx.strokeStyle=dk?'#303040':'#707070';ctx.lineWidth=.7;ctx.strokeRect(cx+sbw-.6,gY-bh-sbH*.35-cwH,cwW,cwH);
+
+  // Boom going LEFT
+  const nSeg=3;
+  for(let s=0;s<nSeg;s++){
+    const t0=s/nSeg,t1=(s+1)/nSeg;
+    const x0=cx-radius*SC*t0,y0=pinY-boomH*SC*t0;
+    const x1=cx-radius*SC*t1,y1=pinY-boomH*SC*t1;
+    const w=(5-s*.7);
+    const blen=Math.sqrt((x1-x0)**2+(y1-y0)**2);
+    const dx=-(y1-y0)/blen*w/2,dy=(x1-x0)/blen*w/2;
+    const w2=w*.62,dx2=dx*w2/w,dy2=dy*w2/w;
+    ctx.beginPath();
+    ctx.moveTo(x0-dx,y0-dy);ctx.lineTo(x0+dx,y0+dy);
+    ctx.lineTo(x1+dx2,y1+dy2);ctx.lineTo(x1-dx2,y1-dy2);ctx.closePath();
+    ctx.fillStyle=s===0?color+'cc':s===1?color+'99':color+'77';ctx.fill();
+    ctx.beginPath();ctx.arc(x1,y1,2.2,0,6.28);
+    ctx.fillStyle=dk?'#182838':'#d0dce8';ctx.strokeStyle=color;ctx.lineWidth=1;ctx.fill();ctx.stroke();
+  }
+  ctx.beginPath();ctx.arc(tipX,tipY,4,0,6.28);
+  ctx.fillStyle=dk?'#1c3040':'#c0d0e0';ctx.strokeStyle=color;ctx.lineWidth=2;ctx.fill();ctx.stroke();
+
+  ctx.fillStyle=color;ctx.font='bold 9px Barlow Condensed,sans-serif';ctx.textAlign='center';
+  ctx.fillText(label,cx,gY+36);
+  ctx.fillStyle=dk?color+'99':color+'cc';ctx.font='8px Inter,sans-serif';
+  ctx.fillText('GR-400EX (40t)',cx,gY+50);
+  return{tipX,tipY};
+}
+
+function drawPh5(ctx,W,H,gY,dk){
+  const d=D,th=sAngle*Math.PI/180;
+  // Scale based on vessel height and canvas
+  const SC=sceneScale(parseFloat(d.bA),d.rLay,d.hTop*.6,gY);
+  const pivX=W*.52,mainCx=W*.1,tailCx=W*.9;
+  const rNow=d.rNow;
+
+  // Main crane — boom facing right
+  drawCrane(ctx,mainCx,gY,rNow,parseFloat(d.bA),SC,'#f97316','Crane A',dk);
+  // Tail crane — boom facing left
+  drawCraneMirror(ctx,tailCx,gY,d.rB,parseFloat(d.bB),Math.min(SC,6),'#38bdf8','Crane B',dk);
+
+  if(showZone)drawExcl(ctx,pivX,gY,d.exclR*SC*.3,dk);
+
+  // Structure rotating around bottom attachment (pivX, pivY=gY is pivot)
+  const armB=d.hBot*SC;
+  const bX=pivX-armB*Math.sin(th),bY=gY+armB*Math.cos(th);
+  const tX=pivX+(d.hTop-d.hBot)*SC*Math.sin(th),tY=gY-(d.hTop-d.hBot)*SC*Math.cos(th);
+  const fTX=pivX+(d.H-d.hBot)*SC*Math.sin(th),fTY=gY-(d.H-d.hBot)*SC*Math.cos(th);
+
+  drawVessel(ctx,bX,bY,fTX,fTY,d.dia,SC,dk,th);
+
+  // CoG marker
+  const cogX=pivX+(d.hCog-d.hBot)*SC*Math.sin(th);
+  const cogY=gY-(d.hCog-d.hBot)*SC*Math.cos(th);
+  ctx.beginPath();ctx.arc(cogX,cogY,8,0,6.28);
+  ctx.fillStyle='rgba(239,68,68,.75)';ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='bold 7.5px Arial';ctx.textAlign='center';ctx.fillText('G',cogX,cogY+2.5);
+
+  // Attachment markers
+  ctx.beginPath();ctx.arc(tX,tY,9,0,6.28);ctx.fillStyle='rgba(249,115,22,.2)';ctx.strokeStyle='#f97316';ctx.lineWidth=2.5;ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.arc(tX,tY,4,0,6.28);ctx.fillStyle='#f97316';ctx.fill();
+  ctx.beginPath();ctx.arc(bX,bY,9,0,6.28);ctx.fillStyle='rgba(56,189,248,.2)';ctx.strokeStyle='#38bdf8';ctx.lineWidth=2.5;ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.arc(bX,bY,4,0,6.28);ctx.fillStyle='#38bdf8';ctx.fill();
+
+  // Ropes — Crane A tip to top attach
+  const mainTipX=mainCx+rNow*SC,mainBH=Math.sqrt(Math.max(0,parseFloat(d.bA)**2-rNow**2));
+  const pinHA=3.8,mainTipY=gY-pinHA*SC-mainBH*SC;
+  ctx.beginPath();ctx.moveTo(mainTipX,mainTipY);ctx.lineTo(tX,tY);
+  ctx.strokeStyle='#f97316';ctx.lineWidth=2.5;ctx.setLineDash([6,4]);ctx.stroke();ctx.setLineDash([]);
+
+  // Rope — Crane B tip to bottom attach
+  const tailTipX=tailCx-d.rB*Math.min(SC,6);
+  const bBH=Math.sqrt(Math.max(0,parseFloat(d.bB)**2-d.rB**2));
+  const pinHB=2.8,tailTipY=gY-pinHB*Math.min(SC,6)-bBH*Math.min(SC,6);
+  ctx.beginPath();ctx.moveTo(tailTipX,tailTipY);ctx.lineTo(bX,bY);
+  ctx.strokeStyle='#38bdf8';ctx.lineWidth=2.5;ctx.setLineDash([6,4]);ctx.stroke();ctx.setLineDash([]);
+
+  // Rotation arc
+  const arcR=44;
+  ctx.beginPath();ctx.arc(pivX,gY,arcR,-Math.PI/2,-Math.PI/2+th,false);
+  ctx.strokeStyle='#f97316';ctx.lineWidth=2.5;ctx.stroke();
+  ctx.fillStyle='#f97316';ctx.font='bold 11px JetBrains Mono,monospace';ctx.textAlign='left';
+  ctx.fillText(sAngle+'°',pivX+arcR+4,gY-14);
+
+  // Load annotations
+  ctx.fillStyle='#f97316';ctx.font='bold 10px JetBrains Mono,monospace';ctx.textAlign='left';
+  ctx.fillText('A: '+d.hlA.toFixed(1)+'t @ '+rNow.toFixed(1)+'m',8,H-70);
+  ctx.fillStyle='#38bdf8';
+  ctx.fillText('B: '+d.hlB.toFixed(1)+'t @ '+d.rB.toFixed(1)+'m',8,H-52);
+  ctx.fillStyle=dk?'#3a5878':'#5070a0';ctx.font='9px Inter,sans-serif';
+  ctx.fillText('Crane B lifts bottom → vessel rotates. Both loads constant.',8,H-34);
+
+  // Live cap annotation box
+  const capNow=lookupCap(CH800,SPF800,d.bA,rNow,d.spA);
+  const uNow=capNow&&capNow-BLK800>0?d.hlA/(capNow-BLK800)*100:null;
+  const colNow=pCol(uNow);
+  box(ctx,W*.62,12,['ROTATION: '+sAngle+'°','Crane A radius: '+rNow.toFixed(1)+'m','Chart cap: '+(capNow?capNow.toFixed(1)+'t':'OOB'),'Crane A util: '+(uNow?Math.round(uNow)+'%':'OOB'),'Crane B util: '+(d.u5B?Math.round(d.u5B)+'%':'OOB')],colNow,dk);
+}
+
+function drawPlan(ctx,W,H,dk){
+  const d=D,SC=8;
+  const mainCx=W*.3,cy=H*.5,tailCx=W*.7;
+  // Radius circles
+  const rA=(PHASE>=3&&PHASE<=5?PHASE===5?d.rNow:PHASE===4?d.rLay:d.rTravel:d.rCut)*SC;
+  ctx.strokeStyle='#f97316';ctx.lineWidth=1.2;ctx.setLineDash([5,4]);
+  ctx.beginPath();ctx.arc(mainCx,cy,rA,0,6.28);ctx.stroke();ctx.setLineDash([]);
+  // Outrigger footprint
+  const spAs=parseFloat(spA)/2*SC;
+  ctx.strokeStyle='#f97316';ctx.lineWidth=1.5;ctx.strokeRect(mainCx-spAs,cy-spAs,spAs*2,spAs*2);
+  [[mainCx-spAs,cy-spAs],[mainCx+spAs,cy-spAs],[mainCx-spAs,cy+spAs],[mainCx+spAs,cy+spAs]].forEach(([px,py])=>{
+    ctx.fillStyle='#f97316';ctx.beginPath();ctx.roundRect(px-6,py-5,12,9,2);ctx.fill();
+    ctx.fillStyle='rgba(249,115,22,.3)';ctx.beginPath();ctx.arc(px,py+1,3,0,6.28);ctx.fill();
+  });
+  ctx.beginPath();ctx.arc(mainCx,cy,16,0,6.28);
+  ctx.fillStyle=dk?'#182838':'#c8d8e8';ctx.strokeStyle='#f97316';ctx.lineWidth=2;ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.moveTo(mainCx,cy);ctx.lineTo(mainCx+rA,cy);ctx.strokeStyle='#f97316';ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle='#f97316';ctx.font='bold 11px Barlow Condensed,sans-serif';ctx.textAlign='center';ctx.fillText('CRANE A — GR-800EX',mainCx,cy+32);
+  ctx.fillStyle=dk?'#4a6a88':'#5a7a98';ctx.font='9px JetBrains Mono,monospace';ctx.fillText(rA.toFixed(0)+'px = '+d.rCut+'m',mainCx+rA/2,cy-10);
+
+  if(PHASE===5){
+    const rB=d.rB*SC;
+    const spBs=parseFloat(spB)/2*SC;
+    ctx.strokeStyle='#38bdf8';ctx.lineWidth=1.2;ctx.setLineDash([5,4]);
+    ctx.beginPath();ctx.arc(tailCx,cy,rB,0,6.28);ctx.stroke();ctx.setLineDash([]);
+    ctx.strokeStyle='#38bdf8';ctx.lineWidth=1.5;ctx.strokeRect(tailCx-spBs,cy-spBs,spBs*2,spBs*2);
+    [[tailCx-spBs,cy-spBs],[tailCx+spBs,cy-spBs],[tailCx-spBs,cy+spBs],[tailCx+spBs,cy+spBs]].forEach(([px,py])=>{
+      ctx.fillStyle='#38bdf8';ctx.beginPath();ctx.roundRect(px-6,py-5,12,9,2);ctx.fill();
+    });
+    ctx.beginPath();ctx.arc(tailCx,cy,14,0,6.28);
+    ctx.fillStyle=dk?'#182838':'#c8d8e8';ctx.strokeStyle='#38bdf8';ctx.lineWidth=2;ctx.fill();ctx.stroke();
+    ctx.fillStyle='#38bdf8';ctx.font='bold 11px Barlow Condensed,sans-serif';ctx.textAlign='center';ctx.fillText('CRANE B — GR-400EX',tailCx,cy+28);
+  }
+  if(showZone){
+    const eR=70;
+    ctx.beginPath();ctx.arc(W*.5,cy,eR,0,6.28);
+    ctx.strokeStyle='rgba(239,68,68,.6)';ctx.lineWidth=2;ctx.setLineDash([7,5]);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='rgba(239,68,68,.05)';ctx.fill();
+    ctx.fillStyle='rgba(239,68,68,.75)';ctx.font='bold 9px Barlow Condensed,sans-serif';ctx.textAlign='center';ctx.fillText('EXCL. ZONE',W*.5,cy+eR-10);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// SCENARIOS
+// ══════════════════════════════════════════════════════
+function saveScenario(n){
+  scenarios[n]={...D};
+  const b=$(n===1?'sc1btn':'sc2btn');
+  b.textContent=`Scenario ${n===1?'A':'B'} Saved ✓`;b.classList.add('saved');
+  if(scenarios[1]&&scenarios[2])$('scCmpBtn').style.display='';
+}
+function compareScenarios(){
+  const a=scenarios[1],b=scenarios[2];if(!a||!b)return;
+  const rows=[
+    ['Max util',a2(Math.max(a.u1||0,a.u2||0,a.u3||0,a.u5A||0)),a2(Math.max(b.u1||0,b.u2||0,b.u3||0,b.u5A||0))+'%'],
+    ['Ph2',a2(a.u2),a2(b.u2)],['Ph3',a2(a.u3),a2(b.u3)],
+    ['Ph5A',a2(a.u5A),a2(b.u5A)],['Ph5B',a2(a.u5B),a2(b.u5B)],
+    ['GBP',Math.round(Math.max(a.gbp2||0,a.gbp3||0,a.gbp5A||0))+'kPa',Math.round(Math.max(b.gbp2||0,b.gbp3||0,b.gbp5A||0))+'kPa'],
+    ['T_main',a.tMain.toFixed(1)+'t',b.tMain.toFixed(1)+'t'],
+  ];
+  function a2(v){return v===null?'OOB':Math.round(v)+'%'}
+  $('scContent').innerHTML=`
+    <div><div class="scc-title">Scenario A</div>${rows.map(r=>`<div class="scc-row"><span style="color:var(--mu)">${r[0]}</span><span style="color:var(--txhi)">${r[1]}</span></div>`).join('')}</div>
+    <div><div class="scc-title">Scenario B</div>${rows.map(r=>`<div class="scc-row"><span style="color:var(--mu)">${r[0]}</span><span style="color:var(--txhi)">${r[2]}</span></div>`).join('')}</div>`;
+  $('scPanel').classList.add('show');
+}
+function clearCompare(){
+  scenarios={1:null,2:null};$('scPanel').classList.remove('show');
+  ['sc1btn','sc2btn'].forEach(id=>{const b=$(id);b.classList.remove('saved');b.textContent=id==='sc1btn'?'Save Scenario A':'Save Scenario B'});
+  $('scCmpBtn').style.display='none';
+}
+
+// ══════════════════════════════════════════════════════
+// RIGGING SCHEDULE
+// ══════════════════════════════════════════════════════
+function showRigSchedule(){
+  const d=D,af=1/Math.cos(d.angRad);
+  const rows=[
+    ['Main Hook Block','GR-800EX standard block','80t WLL',d.hl3.toFixed(1)+'t','1 off'],
+    ['Main Sling (per leg)','Chain/wire '+d.slingLen.toFixed(0)+'m ea',d.wll+'t WLL/leg',d.tensA.toFixed(2)+'t',d.legs+' legs'],
+    ['Angle factor','Sling '+d.angDeg+'° to vertical','—','×'+af.toFixed(3),'Applied'],
+    ['Main Shackle','Omega/Bow type',fv('inShackle')+'t WLL min',d.tensA.toFixed(2)+'t',d.legs+' off'],
+    ['Tail Block','GR-400EX standard block','40t WLL',d.hlB.toFixed(2)+'t','1 off'],
+    ['Tail Sling','Chain/wire to suit',((d.hlB*1.3).toFixed(1))+'t WLL min',d.hlB.toFixed(2)+'t','1 set'],
+    ['Tail Shackle','To suit attach point',((d.hlB*1.3).toFixed(1))+'t WLL min',d.hlB.toFixed(2)+'t','1 off'],
+    ['Taglines','Polyprop 22–25mm','Manual','Personnel control','2 min'],
+  ];
+  $('rigScheduleTable').innerHTML=`<thead><tr style="background:rgba(249,115,22,.1)">
+    <th style="padding:7px">Item</th><th>Description</th><th>Required WLL</th><th>Actual Load</th><th>Qty</th>
+  </tr></thead><tbody>${rows.map(r=>`<tr><td style="font-weight:700;color:var(--txhi)">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td style="color:var(--acc);font-family:'JetBrains Mono',monospace">${r[3]}</td><td>${r[4]}</td></tr>`).join('')}</tbody>`;
+  $('rigModal').style.display='flex';
+}
+
+// ══════════════════════════════════════════════════════
+// CONTROLS
+// ══════════════════════════════════════════════════════
+function setPhase(n){
+  PHASE=n;
+  document.querySelectorAll('.psi').forEach(el=>{
+    const ph=parseInt(el.dataset.ph);
+    el.classList.remove('active','done');
+    if(ph<n)el.classList.add('done');else if(ph===n)el.classList.add('active');
+  });
+  $('scrub').style.display=n===5?'block':'none';
+  $('tailSection').style.display=n===5?'block':'none';
+  updatePhasePanel();buildCompliance();buildChecklist();drawCanvas();
+}
+function setSp(s,el){
+  if(s==='A')spA=el.dataset.v;else spB=el.dataset.v;
+  el.closest('.pills').querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');recalc();
+}
+function setView(v,el){VIEW=v;document.querySelectorAll('.vbtn').forEach(b=>b.classList.remove('on'));el.classList.add('on');drawCanvas()}
+function toggleZone(){showZone=!showZone;$('btnZone').classList.toggle('on',showZone);drawCanvas()}
+function onScrub(){sAngle=parseInt($('sAngle').value);sv('sVal',sAngle+'°');sv('animPhase','');updatePhasePanel();drawCanvas()}
+let animId=null;
+function toggleAnim(){
+  animOn=!animOn;$('animBtn').textContent=animOn?'■ Stop':'▶ Animate';
+  if(animOn)stepAnim();else{clearTimeout(animId);sv('animPhase','')}
+}
+function stepAnim(){
+  if(!animOn)return;
+  sAngle=(sAngle+1)%91;
+  $('sAngle').value=sAngle;sv('sVal',sAngle+'°');
+  sv('animPhase',sAngle+'° | r='+D.rNow?.toFixed(1)+'m');
+  updatePhasePanel();drawCanvas();
+  animId=setTimeout(stepAnim,parseInt($('animSpd').value));
+}
+function toggleTheme(){
+  const dk=document.documentElement.dataset.theme==='dark';
+  document.documentElement.dataset.theme=dk?'light':'dark';
+  $('thbtn').textContent=dk?'🌙':'☀️';drawCanvas();
+}
+function toggleEdu(id){
+  const b=$(id),c=$(id+'Ch');const o=b.classList.contains('open');
+  b.classList.toggle('open',!o);c.classList.toggle('open',!o);
+}
+function selConn(el){document.querySelectorAll('.conn-opt').forEach(c=>c.classList.remove('sel'));el.classList.add('sel')}
+
+// ══════════════════════════════════════════════════════
+// PDF EXPORT
+// ══════════════════════════════════════════════════════
+function exportPDF(){
+  const d=D;
+  $('pr_title').textContent='Structural Lay-Down — '+$('fDesc').value;
+  $('pr_dt').textContent=new Date().toLocaleString('en-AU');
+  $('pr_meta').innerHTML=`Project: ${$('fProj').value}<br>Site: ${$('fSite').value}<br>Date: ${$('fDate').value||'—'}<br>Supervisor: ${$('fEng').value||'—'}`;
+  const f=v=>v===null?'OOB':Math.round(v)+'%';
+  $('pr_grid').innerHTML=`
+    <div class="pbox"><h3>Structure</h3>
+      <div class="pr2"><span>Description</span><span>${$('fDesc').value}</span></div>
+      <div class="pr2"><span>Total Weight</span><span>${fv('inW')} t</span></div>
+      <div class="pr2"><span>Height</span><span>${fv('inH')} m</span></div>
+      <div class="pr2"><span>CoG Height</span><span>${fv('inCog')} m</span></div>
+      <div class="pr2"><span>Top Attach (Crane A)</span><span>${fv('inHtop')} m</span></div>
+      <div class="pr2"><span>Tail Attach (Crane B)</span><span>${fv('inHbot')} m</span></div>
+      <div class="pr2"><span>T_main (constant)</span><span>${(d.tMain||0).toFixed(2)} t</span></div>
+      <div class="pr2"><span>T_tail (constant)</span><span>${(d.tTail||0).toFixed(2)} t</span></div>
+      <div class="pr2"><span>Exclusion Zone</span><span>${(d.exclR||0).toFixed(0)} m</span></div>
+    </div>
+    <div class="pbox"><h3>Phase Results</h3>
+      <div class="pr2"><span>Ph 1 Connect A (×1.00)</span><span>${f(d.u1)}</span></div>
+      <div class="pr2"><span>Ph 2 Oxy Cut (×1.50)</span><span>${f(d.u2)}</span></div>
+      <div class="pr2"><span>Ph 3 Travel (×1.50)</span><span>${f(d.u3)}</span></div>
+      <div class="pr2"><span>Ph 4 Connect B (×1.50)</span><span>${f(d.u4)}</span></div>
+      <div class="pr2"><span>Ph 5 Crane A 90° (×1.25)</span><span>${f(d.u5A)}</span></div>
+      <div class="pr2"><span>Ph 5 Crane B (×1.25)</span><span>${f(d.u5B)}</span></div>
+      <div class="pr2"><span>Max GBP Crane A</span><span>${Math.round(Math.max(d.gbp2||0,d.gbp3||0,d.gbp5A||0))} kPa</span></div>
+      <div class="pr2"><span>Wind</span><span>${d.wind||0} km/h — Bft ${d.bft?.n||0}</span></div>
+    </div>
+    <div class="pbox"><h3>Crane A — GR-800EX (80t)</h3>
+      <div class="pr2"><span>Boom</span><span>${$('inBA').value} m</span></div>
+      <div class="pr2"><span>Outrigger Spread</span><span>${spA} m</span></div>
+      <div class="pr2"><span>Cut Radius</span><span>${fv('inRcut')} m</span></div>
+      <div class="pr2"><span>Travel Radius (max)</span><span>${fv('inRtravel')} m</span></div>
+      <div class="pr2"><span>Lay-down Start Radius</span><span>${fv('inRlay')} m</span></div>
+      <div class="pr2"><span>Max Radius @ 90°</span><span>${fv('inRlayMax')} m</span></div>
+      <div class="pr2"><span>Hook Load Ph2</span><span>${(d.hl2||0).toFixed(2)} t</span></div>
+    </div>
+    <div class="pbox"><h3>Crane B — GR-400EX (40t)</h3>
+      <div class="pr2"><span>Boom</span><span>${$('inBB').value} m</span></div>
+      <div class="pr2"><span>Outrigger Spread</span><span>${spB} m</span></div>
+      <div class="pr2"><span>Operating Radius</span><span>${fv('inRB')} m</span></div>
+      <div class="pr2"><span>Hook Load (×1.25)</span><span>${(d.hlB||0).toFixed(2)} t</span></div>
+      <div class="pr2"><span>Utilization</span><span>${f(d.u5B)}</span></div>
+      <div class="pr2"><span>GBP</span><span>${Math.round(d.gbp5B||0)} / ${fv('inGBPB')} kPa</span></div>
+    </div>`;
+  $('pr_comp').innerHTML=Array.from($('chips').querySelectorAll('.chip')).map(c=>`<div class="palert ${c.classList.contains('p')?'p':c.classList.contains('w')?'w':'f'}">${c.textContent}</div>`).join('');
+  window.print();
+}
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+window.onload=function(){
+  $('fDate').value=new Date().toISOString().split('T')[0];
+  recalc();setPhase(3);
+  window.addEventListener('resize',drawCanvas);
+};
 </script>
 </body>
 </html>
